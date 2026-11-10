@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+ * rext Design Tokens & Adaptive Atmospheric Themes
+ * 4 Distinct Themes:
+ * 1. theme-warmer (Default) - Smooth Warm Cashmere Linen (Light, warm, smooth)
+ * 2. theme-sunset - Warm Honey Amber (Aesthetic, sunny, warm)
+ * 3. theme-cold - Cold Frost Slate (Airy, crisp, modern light)
+ * 4. theme-mocha - Warm Velvet Dark (Smooth dark espresso, not pitch black)
+ */
+
+:root,
+.theme-warmer,
+body.theme-warmer {
+  --bg-main: #F7F4EE;
+  --bg-sidebar: #EFE9DF;
+  --bg-surface: #FFFFFF;
+  --bg-surface-hover: #F3ECE2;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #FAF6F0;
+  --bg-input: #FFFFFF;
+  --bg-darker: #FFFFFF;
+  --border-color: #E3DDD3;
+  --border-light: #ECE6DC;
+  --text-main: #1D1916;
+  --text-muted: #6B6158;
+  --text-sub: #9E9388;
+  --accent-orange: #FF5500;
+  --accent-blue: #0066FF;
+  --accent-cyan: #0284C7;
+  --accent-glow: rgba(255, 85, 0, 0.18);
+  --shadow-card: 0 4px 16px -2px rgba(45, 30, 20, 0.06), 0 2px 6px -1px rgba(45, 30, 20, 0.04);
+}
+
+.theme-sunset,
+body.theme-sunset {
+  --bg-main: #FDF6EE;
+  --bg-sidebar: #F7EADE;
+  --bg-surface: #FFFBF8;
+  --bg-surface-hover: #FAEDE1;
+  --bg-card: #FFFBF8;
+  --bg-card-hover: #FBF0E6;
+  --bg-input: #FFFFFF;
+  --bg-darker: #FFFBF8;
+  --border-color: #EBD9C8;
+  --border-light: #F3E5D7;
+  --text-main: #241712;
+  --text-muted: #7B6557;
+  --text-sub: #A69081;
+  --accent-orange: #FF4D00;
+  --accent-blue: #2563EB;
+  --accent-cyan: #0EA5E9;
+  --accent-glow: rgba(255, 77, 0, 0.18);
+  --shadow-card: 0 4px 16px -2px rgba(60, 30, 15, 0.07), 0 2px 6px -1px rgba(60, 30, 15, 0.04);
+}
+
+.theme-cold,
+body.theme-cold {
+  --bg-main: #F1F5F9;
+  --bg-sidebar: #E2E8F0;
+  --bg-surface: #FFFFFF;
+  --bg-surface-hover: #EDF2F7;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8FAFC;
+  --bg-input: #FFFFFF;
+  --bg-darker: #FFFFFF;
+  --border-color: #CBD5E1;
+  --border-light: #E2E8F0;
+  --text-main: #0F172A;
+  --text-muted: #475569;
+  --text-sub: #64748B;
+  --accent-orange: #FF5C00;
+  --accent-blue: #0284C7;
+  --accent-cyan: #06B6D4;
+  --accent-glow: rgba(0, 102, 255, 0.18);
+  --shadow-card: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+.theme-mocha,
+body.theme-mocha {
+  --bg-main: #1A1614;
+  --bg-sidebar: #221D1A;
+  --bg-surface: #29231F;
+  --bg-surface-hover: #332B27;
+  --bg-card: #241E1B;
+  --bg-card-hover: #2E2622;
+  --bg-input: #1F1916;
+  --bg-darker: #201A18;
+  --border-color: #3D332D;
+  --border-light: #4A3E37;
+  --text-main: #FAF3ED;
+  --text-muted: #B5A79C;
+  --text-sub: #85776C;
+  --accent-orange: #FF6600;
+  --accent-blue: #38BDF8;
+  --accent-cyan: #22D3EE;
+  --accent-glow: rgba(255, 102, 0, 0.28);
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+}
+
+/* Typography Classes */
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+.font-syne {
+  font-family: 'Syne', sans-serif;
+}
+.font-space {
+  font-family: 'Space Grotesk', sans-serif;
+}
+.font-cinzel {
+  font-family: 'Cinzel', serif;
+}
+.font-jakarta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main) !important;
+    color: var(--text-main);
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-sub);
+}
+
+/* Slider Controls */
+input[type='range'] {
+  accent-color: var(--accent-orange);
+}
+
+/* Keyframes & Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 20s linear infinite;
+}

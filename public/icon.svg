@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF5500"/>
+      <stop offset="50%" stop-color="#FF7A00"/>
+      <stop offset="100%" stop-color="#0066FF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#grad)"/>
+  <!-- Disc Groove Circle -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="4"/>
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="3"/>
+  <!-- Center 'r' monogram with music soundwave -->
+  <g filter="url(#shadow)">
+    <path d="M190 350 L190 170 L260 170 C310 170 335 195 335 230 C335 258 318 280 285 290 L345 350 L285 350 L235 295 L235 350 Z M235 215 L235 255 L260 255 C282 255 292 245 292 235 C292 225 282 215 260 215 Z" fill="#FFFFFF"/>
+    <!-- Soundwave bars on the right -->
+    <rect x="360" y="220" width="16" height="70" rx="8" fill="#FFFFFF"/>
+    <rect x="390" y="190" width="16" height="130" rx="8" fill="#FFFFFF"/>
+    <rect x="420" y="235" width="16" height="40" rx="8" fill="#FFFFFF"/>
+  </g>
+</svg>
+
