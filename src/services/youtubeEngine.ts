@@ -19,7 +19,9 @@ class YouTubeEngine {
   private queuedVideoId: string | null = null;
   private pollTimer: number | null = null;
   private currentVolume: number = 85;
-  private isVideoVisible: boolean = false;
+  private isVideoVisible: boolean = true;
+  private anchorElement: HTMLElement | null = null;
+  private resizeObserver: ResizeObserver | null = null;
 
   public onTimeUpdate?: (currentTime: number, duration: number) => void;
   public onPlayStateChange?: (isPlaying: boolean) => void;
@@ -30,6 +32,9 @@ class YouTubeEngine {
     if (typeof window !== 'undefined') {
       (window as any).__rext_youtubeEngine = this;
       this.loadIframeAPI();
+
+      window.addEventListener('resize', () => this.updatePosition());
+      window.addEventListener('scroll', () => this.updatePosition(), true);
     }
   }
 
@@ -60,18 +65,78 @@ class YouTubeEngine {
     }
   }
 
-  private applyContainerStyles(container: HTMLElement) {
-    // Pure Audio Mode: Keep YouTube player completely offscreen and invisible
-    // so it never renders a video box on top of the UI
+  public updatePosition() {
+    const container = document.getElementById('rext-youtube-container');
+    if (!container) return;
+
+    if (!this.isVideoVisible || !this.anchorElement) {
+      // Background Audio Mode: Keep YouTube player completely offscreen
+      container.style.position = 'fixed';
+      container.style.top = '-9999px';
+      container.style.left = '-9999px';
+      container.style.width = '300px';
+      container.style.height = '300px';
+      container.style.opacity = '0.001';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '-9999';
+      container.style.overflow = 'hidden';
+      container.style.visibility = 'hidden';
+      return;
+    }
+
+    // Video Mode: Glue container seamlessly to anchor element
+    const rect = this.anchorElement.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      container.style.visibility = 'hidden';
+      return;
+    }
+
+    const computed = window.getComputedStyle(this.anchorElement);
     container.style.position = 'fixed';
-    container.style.bottom = '-9999px';
-    container.style.right = '-9999px';
-    container.style.width = '200px';
-    container.style.height = '200px';
-    container.style.opacity = '0.001';
-    container.style.pointerEvents = 'none';
-    container.style.zIndex = '-9999';
+    container.style.top = `${rect.top}px`;
+    container.style.left = `${rect.left}px`;
+    container.style.width = `${rect.width}px`;
+    container.style.height = `${rect.height}px`;
+    container.style.borderRadius = computed.borderRadius || '16px';
     container.style.overflow = 'hidden';
+    container.style.zIndex = '52'; // Just above base surfaces, below REXT custom overlay
+    container.style.opacity = '1';
+    container.style.pointerEvents = 'none'; // Critical: All clicks captured by REXT native overlay
+    container.style.visibility = 'visible';
+    container.style.transition = 'opacity 0.25s ease-out, border-radius 0.2s ease';
+
+    const iframe = container.querySelector('iframe');
+    if (iframe) {
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      // 1.15 scale crops top title bar & watermark outside bounds for a pure native look
+      iframe.style.transform = 'scale(1.15)';
+      iframe.style.transformOrigin = 'center center';
+      iframe.style.pointerEvents = 'none';
+      iframe.style.border = 'none';
+    }
+  }
+
+  public setAnchorElement(element: HTMLElement | null) {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+
+    this.anchorElement = element;
+
+    if (element && typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.updatePosition();
+      });
+      this.resizeObserver.observe(element);
+    }
+
+    this.updatePosition();
+  }
+
+  private applyContainerStyles(container: HTMLElement) {
+    this.updatePosition();
   }
 
   private createPlayer() {
@@ -79,7 +144,15 @@ class YouTubeEngine {
     if (!container) {
       container = document.createElement('div');
       container.id = 'rext-youtube-container';
-      this.applyContainerStyles(container);
+      container.style.position = 'fixed';
+      container.style.top = '-9999px';
+      container.style.left = '-9999px';
+      container.style.width = '300px';
+      container.style.height = '300px';
+      container.style.opacity = '0.001';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '-9999';
+      container.style.overflow = 'hidden';
       document.body.appendChild(container);
 
       const placeholder = document.createElement('div');
@@ -94,13 +167,15 @@ class YouTubeEngine {
         videoId: this.currentVideoId || '34Na4j8AVgA',
         playerVars: {
           autoplay: 1,
-          controls: 1,
-          disablekb: 0,
-          fs: 1,
-          modestbranding: 1,
-          rel: 0,
-          playsinline: 1,
+          controls: 0,             // Pure REXT UI: no YouTube controls, timeline, or buttons
+          disablekb: 1,            // No YouTube native keyboard shortcuts
+          fs: 0,                   // No native fullscreen button
+          modestbranding: 1,       // Suppresses branding
+          rel: 0,                  // No unrelated videos
+          playsinline: 1,          // Inline mobile playback
           enablejsapi: 1,
+          iv_load_policy: 3,       // Disables video annotations & cards
+          autohide: 1,
           origin: window.location.origin,
           vq: 'hd1080',
           suggestedQuality: 'hd1080'
@@ -115,6 +190,7 @@ class YouTubeEngine {
                 this.player.setPlaybackQuality('hd1080');
               }
             } catch {}
+            this.updatePosition();
             const targetId = this.queuedVideoId || this.currentVideoId;
             if (targetId) {
               this.loadAndPlay(targetId);
@@ -128,6 +204,7 @@ class YouTubeEngine {
                   this.player.setPlaybackQuality('hd1080');
                 }
               } catch {}
+              this.updatePosition();
               if (this.onPlayStateChange) this.onPlayStateChange(true);
               this.startProgressPolling();
             } else if (event.data === 2) {
@@ -152,10 +229,7 @@ class YouTubeEngine {
 
   public setVideoVisibility(visible: boolean) {
     this.isVideoVisible = visible;
-    const container = document.getElementById('rext-youtube-container');
-    if (container) {
-      this.applyContainerStyles(container);
-    }
+    this.updatePosition();
   }
 
   public getIsVideoVisible(): boolean {

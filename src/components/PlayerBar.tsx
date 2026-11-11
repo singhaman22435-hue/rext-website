@@ -18,7 +18,8 @@ import {
   Sliders,
   Flame,
   ListMusic,
-  Moon
+  Moon,
+  Film
 } from 'lucide-react';
 
 interface PlayerBarProps {
@@ -448,6 +449,23 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Video Mode Toggle Button */}
+            {onToggleVideo && (
+              <button
+                onClick={onToggleVideo}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  isVideoVisible
+                    ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-sm'
+                    : 'bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                }`}
+                title={isVideoVisible ? 'Video Mode: ON (Click for Audio Only)' : 'Turn On Video Mode'}
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span className="hidden lg:inline">Video</span>
+                {isVideoVisible && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+              </button>
+            )}
 
             {/* Equalizer Button */}
             <button

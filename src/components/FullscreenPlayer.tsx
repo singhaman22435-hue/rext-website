@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Track, LyricLine } from '../types';
 import { VisualizerCanvas } from './VisualizerCanvas';
 import { LyricsService, LyricsResult } from '../services/lyricsService';
+import { youtubeEngine } from '../services/youtubeEngine';
 import {
   Play,
   Pause,
@@ -16,7 +17,9 @@ import {
   Activity,
   Sparkles,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Film,
+  Disc
 } from 'lucide-react';
 
 interface FullscreenPlayerProps {
@@ -60,10 +63,24 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
   isLiked,
   onToggleLike,
 }) => {
-  const [activeTab, setActiveTab] = useState<'visualizer' | 'lyrics'>('visualizer');
+  const [activeTab, setActiveTab] = useState<'video' | 'visualizer' | 'lyrics'>('video');
   const [lyricsData, setLyricsData] = useState<LyricsResult | null>(null);
+  const [seekNotice, setSeekNotice] = useState<string | null>(null);
   const activeLineRef = useRef<HTMLDivElement | null>(null);
   const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
+  const videoAnchorRef = useRef<HTMLDivElement | null>(null);
+
+  // Synchronize anchor element with YouTube engine when in video mode
+  useEffect(() => {
+    if (isOpen && activeTab === 'video' && videoAnchorRef.current) {
+      youtubeEngine.setAnchorElement(videoAnchorRef.current);
+    } else if (!isOpen || activeTab !== 'video') {
+      youtubeEngine.setAnchorElement(null);
+    }
+    return () => {
+      youtubeEngine.setAnchorElement(null);
+    };
+  }, [isOpen, activeTab, track?.id]);
 
   // Load full lyrics whenever track changes or player opens
   useEffect(() => {
@@ -85,6 +102,11 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  const triggerSeekNotice = (text: string) => {
+    setSeekNotice(text);
+    setTimeout(() => setSeekNotice(null), 800);
+  };
+
   const lyrics = lyricsData?.synced && lyricsData.synced.length > 0 ? lyricsData.synced : track?.lyrics || [];
 
   let activeIndex = -1;
@@ -98,9 +120,9 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
     }
   }
 
-  // Smooth scroll active line in lyrics tab
+  // Smooth scroll active line in lyrics tab or video split view
   useEffect(() => {
-    if (activeTab === 'lyrics' && activeLineRef.current && lyricsContainerRef.current) {
+    if ((activeTab === 'lyrics' || activeTab === 'video') && activeLineRef.current && lyricsContainerRef.current) {
       activeLineRef.current.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
@@ -124,7 +146,7 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
       role="dialog"
       aria-modal="true"
       aria-label={`Now Playing: ${track.title}`}
-      className="fixed inset-0 z-50 bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-between p-4 sm:p-6 md:p-10 overflow-hidden animate-fade-in select-none"
+      className="fixed inset-0 z-50 bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-between p-4 sm:p-6 md:p-8 overflow-hidden animate-fade-in select-none"
       style={{ overscrollBehavior: 'contain' }}
     >
       {/* Background Ambient Glows */}
@@ -148,8 +170,10 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
             <span className="text-xs font-bold hidden sm:inline">Back</span>
           </button>
           <div>
-            <h4 className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)]">
-              Theater Mode
+            <h4 className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
+              <span>Theater Studio</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[9px] font-mono text-[var(--accent-orange)]">1080p DSP</span>
             </h4>
             <p className="text-xs sm:text-sm font-semibold text-[var(--text-main)] truncate max-w-[160px] sm:max-w-xs">
               {track.album || track.title}
@@ -157,8 +181,21 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
           </div>
         </div>
 
-        {/* Tab Switcher: Visualizer vs Synced Lyrics */}
+        {/* 3-Way Tab Switcher: Video vs Spectrum vs Synced Lyrics */}
         <div className="flex items-center gap-1 p-1 bg-black/10 dark:bg-white/10 rounded-2xl backdrop-blur-md border border-[var(--border-color)]">
+          <button
+            onClick={() => setActiveTab('video')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'video'
+                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            <Film className="w-3.5 h-3.5" />
+            <span>Video</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+          </button>
+
           <button
             onClick={() => setActiveTab('visualizer')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
@@ -170,6 +207,7 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
             <Activity className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Spectrum</span>
           </button>
+
           <button
             onClick={() => setActiveTab('lyrics')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
@@ -196,69 +234,163 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
         </button>
       </div>
 
-      {/* Center Stage: Rotating Vinyl + Spectrum / Lyrics */}
+      {/* Center Stage: Video vs Rotating Vinyl + Spectrum / Lyrics */}
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 items-center max-w-6xl mx-auto w-full my-auto py-2">
-        {/* Left: Vinyl Disc Presentation */}
-        <div className="flex flex-col items-center justify-center space-y-4 sm:space-y-6">
-          <div className="relative group">
-            {/* Pulsing Bass Glow beneath the disc */}
-            <div
-              className="absolute inset-0 rounded-full bg-gradient-to-r from-[var(--accent-orange)] to-[var(--accent-blue)] blur-2xl opacity-30 transition-transform duration-300 pointer-events-none"
-              style={{
-                transform: `scale(${1 + (bassBoost / 18) * 0.25})`,
-              }}
-            />
+        {/* Left Column: Video Stage OR Vinyl Disc */}
+        {activeTab === 'video' ? (
+          <div className="flex flex-col items-center justify-center w-full max-w-xl mx-auto">
+            <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black border-2 border-[var(--border-color)] shadow-2xl group">
+              {/* Pulsing ambient backdrop */}
+              <div
+                className="absolute -inset-4 bg-cover bg-center blur-2xl opacity-40 pointer-events-none"
+                style={{ backgroundImage: `url(${track.coverUrl})` }}
+              />
 
-            {/* Vinyl record disc */}
-            <div
-              className={`relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full bg-black border-4 border-[var(--border-color)] shadow-2xl flex items-center justify-center transition-transform ${
-                isPlaying ? 'animate-spin-vinyl' : 'animate-spin-vinyl animate-spin-vinyl-paused'
-              }`}
-            >
-              <div className="absolute inset-3 sm:inset-4 rounded-full border border-white/10 pointer-events-none" />
-              <div className="absolute inset-6 sm:inset-8 rounded-full border border-white/10 pointer-events-none" />
-              <div className="absolute inset-10 sm:inset-14 rounded-full border border-white/10 pointer-events-none" />
-              <div className="absolute inset-16 sm:inset-20 rounded-full border border-white/10 pointer-events-none" />
+              {/* Anchor Element where YouTube iframe is seamlessly positioned */}
+              <div
+                ref={videoAnchorRef}
+                id="rext-theater-video-anchor"
+                className="absolute inset-0 w-full h-full rounded-3xl overflow-hidden pointer-events-none bg-neutral-950"
+              />
 
-              {/* Album art center sticker */}
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-[#1C1612] shadow-inner">
-                <img
-                  src={track.coverUrl}
-                  alt={track.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
-                  }}
-                />
-                <div className="absolute inset-0 m-auto w-4 h-4 rounded-full bg-black border-2 border-white/30" />
+              {/* REXT Custom Interactive Glass Overlay (Captures clicks, zero YouTube branding) */}
+              <div
+                onClick={onTogglePlay}
+                onDoubleClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickX = e.clientX - rect.left;
+                  if (clickX < rect.width / 2) {
+                    onSeek(Math.max(0, currentTime - 10));
+                    triggerSeekNotice('-10s');
+                  } else {
+                    onSeek(Math.min(duration, currentTime + 10));
+                    triggerSeekNotice('+10s');
+                  }
+                }}
+                className={`absolute inset-0 z-55 flex flex-col justify-between p-3.5 sm:p-5 bg-gradient-to-t from-black/80 via-transparent to-black/60 transition-opacity duration-300 cursor-pointer ${
+                  !isPlaying ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus-within:opacity-100'
+                }`}
+              >
+                {/* Top Badges */}
+                <div className="flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white text-xs font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                    <span>REXT Cinema Studio</span>
+                    <span className="text-[10px] text-white/60 font-mono">1080p HD</span>
+                  </div>
+
+                  <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 text-[10px] font-mono">
+                    Double-tap: ±10s
+                  </span>
+                </div>
+
+                {/* Center Play/Pause & Double-tap Notice */}
+                <div className="flex items-center justify-center pointer-events-none">
+                  {seekNotice ? (
+                    <div className="px-4 py-2 rounded-2xl bg-black/80 backdrop-blur-md text-[var(--accent-orange)] text-lg font-extrabold border border-[var(--accent-orange)]/40 shadow-xl">
+                      {seekNotice}
+                    </div>
+                  ) : (
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[var(--accent-orange)]/90 backdrop-blur-md text-white flex items-center justify-center shadow-2xl transition-transform ${isPlaying ? 'scale-90 hover:scale-100' : 'scale-105'}`}>
+                      {isPlaying ? (
+                        <Pause className="w-7 h-7 sm:w-8 sm:h-8 fill-current" />
+                      ) : (
+                        <Play className="w-7 h-7 sm:w-8 sm:h-8 fill-current translate-x-0.5" />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom Subtitle / Info */}
+                <div className="flex items-center justify-between text-white" onClick={(e) => e.stopPropagation()}>
+                  <div className="min-w-0 pr-2">
+                    <h3 className="text-sm sm:text-base font-bold truncate drop-shadow">{track.title}</h3>
+                    <p className="text-[11px] sm:text-xs text-white/80 truncate">{track.artist}</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('visualizer')}
+                    className="shrink-0 px-2.5 py-1 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur-md text-xs font-semibold text-white transition-colors flex items-center gap-1"
+                  >
+                    <Disc className="w-3.5 h-3.5" />
+                    <span>Vinyl</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Quick Track Info Under Vinyl */}
-          <div className="text-center space-y-1 max-w-sm px-2">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[var(--text-main)] flex items-center justify-center gap-2 sm:gap-3">
-              <span className="truncate">{track.title}</span>
-              <button
-                onClick={onToggleLike}
-                className={`transition-colors shrink-0 ${
-                  isLiked
-                    ? 'text-[var(--accent-orange)]'
-                    : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
+            {/* Quick Live Lyric Line under Video */}
+            <div
+              onClick={() => setActiveTab('lyrics')}
+              className="mt-2.5 w-full py-2 px-3.5 rounded-2xl bg-[var(--bg-card)]/80 border border-[var(--border-color)] text-center cursor-pointer hover:border-[var(--accent-orange)]/50 transition-colors"
+            >
+              <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate">
+                {activeLyricText || 'REXT Cinema Studio • 24-bit Audio DSP Active'}
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* Left: Vinyl Disc Presentation */
+          <div className="flex flex-col items-center justify-center space-y-4 sm:space-y-6">
+            <div className="relative group">
+              {/* Pulsing Bass Glow beneath the disc */}
+              <div
+                className="absolute inset-0 rounded-full bg-gradient-to-r from-[var(--accent-orange)] to-[var(--accent-blue)] blur-2xl opacity-30 transition-transform duration-300 pointer-events-none"
+                style={{
+                  transform: `scale(${1 + (bassBoost / 18) * 0.25})`,
+                }}
+              />
+
+              {/* Vinyl record disc */}
+              <div
+                className={`relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full bg-black border-4 border-[var(--border-color)] shadow-2xl flex items-center justify-center transition-transform ${
+                  isPlaying ? 'animate-spin-vinyl' : 'animate-spin-vinyl animate-spin-vinyl-paused'
                 }`}
-                aria-label="Toggle Like"
               >
-                <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${isLiked ? 'fill-current' : ''}`} />
-              </button>
-            </h2>
-            <p className="text-sm sm:text-base text-[var(--accent-blue)] font-medium truncate">
-              {track.artist}
-            </p>
-          </div>
-        </div>
+                <div className="absolute inset-3 sm:inset-4 rounded-full border border-white/10 pointer-events-none" />
+                <div className="absolute inset-6 sm:inset-8 rounded-full border border-white/10 pointer-events-none" />
+                <div className="absolute inset-10 sm:inset-14 rounded-full border border-white/10 pointer-events-none" />
+                <div className="absolute inset-16 sm:inset-20 rounded-full border border-white/10 pointer-events-none" />
 
-        {/* Right Stage: Tabbed (Visualizer vs Interactive Lyrics) */}
+                {/* Album art center sticker */}
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-[#1C1612] shadow-inner">
+                  <img
+                    src={track.coverUrl}
+                    alt={track.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+                    }}
+                  />
+                  <div className="absolute inset-0 m-auto w-4 h-4 rounded-full bg-black border-2 border-white/30" />
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Track Info Under Vinyl */}
+            <div className="text-center space-y-1 max-w-sm px-2">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[var(--text-main)] flex items-center justify-center gap-2 sm:gap-3">
+                <span className="truncate">{track.title}</span>
+                <button
+                  onClick={onToggleLike}
+                  className={`transition-colors shrink-0 ${
+                    isLiked
+                      ? 'text-[var(--accent-orange)]'
+                      : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
+                  }`}
+                  aria-label="Toggle Like"
+                >
+                  <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${isLiked ? 'fill-current' : ''}`} />
+                </button>
+              </h2>
+              <p className="text-sm sm:text-base text-[var(--accent-blue)] font-medium truncate">
+                {track.artist}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Right Stage: Visualizer vs Synced Lyrics (Also shown in split-mode with Video) */}
         {activeTab === 'visualizer' ? (
           <div className="flex flex-col justify-center space-y-4 sm:space-y-6 bg-[var(--bg-card)]/90 p-5 sm:p-7 rounded-3xl border border-[var(--border-color)] shadow-xl backdrop-blur-md">
             {/* Visualizer inside theater */}
@@ -274,7 +406,7 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
               <VisualizerCanvas height={85} mode="bars" showControls={true} isPlaying={isPlaying} />
             </div>
 
-            {/* Live Karaoke Highlight Box (Clickable to switch to full lyrics) */}
+            {/* Live Karaoke Highlight Box */}
             <div
               onClick={() => setActiveTab('lyrics')}
               className="py-5 px-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] min-h-[120px] flex flex-col justify-center text-center space-y-1.5 shadow-inner cursor-pointer hover:border-[var(--accent-orange)]/50 transition-all group"
@@ -314,7 +446,7 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
             </div>
           </div>
         ) : (
-          /* Live Synchronized Lyrics Stage (Apple Music Style) */
+          /* Live Synchronized Lyrics Stage (Split view with Video or standalone Lyrics view) */
           <div className="flex flex-col h-[340px] sm:h-[400px] bg-[var(--bg-card)]/90 rounded-3xl border border-[var(--border-color)] shadow-xl backdrop-blur-md overflow-hidden">
             {/* Header */}
             <div className="p-3 px-5 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--bg-card)] text-xs">

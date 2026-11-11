@@ -44,6 +44,7 @@ import { PlaylistCard } from './components/PlaylistCard';
 import { BassLabModal } from './components/BassLabModal';
 import { LyricsModal } from './components/LyricsModal';
 import { FullscreenPlayer } from './components/FullscreenPlayer';
+import { MiniVideoPlayer } from './components/MiniVideoPlayer';
 import { DownloadManagerModal } from './components/DownloadManagerModal';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { ImportAudioModal } from './components/ImportAudioModal';
@@ -1462,6 +1463,15 @@ export const App: React.FC = () => {
         track={currentTrack}
         currentTime={currentTime}
         onSeek={handleSeek}
+      />
+
+      <MiniVideoPlayer
+        currentTrack={currentTrack}
+        isPlaying={isPlaying}
+        onTogglePlay={handleTogglePlay}
+        onOpenFullscreen={() => setIsFullscreenOpen(true)}
+        onCloseVideo={handleToggleVideo}
+        isVisible={isVideoVisible && Boolean(currentTrack) && !isFullscreenOpen}
       />
 
       <FullscreenPlayer
