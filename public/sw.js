@@ -1,6 +1,6 @@
-const CACHE_NAME = 'rext-v3';
+const CACHE_NAME = 'rext-v5-live';
 
-self.addEventListener('install', () => {
+self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 

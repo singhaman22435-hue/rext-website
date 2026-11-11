@@ -38,7 +38,9 @@
           }
         } else {
           window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=5').then(function(reg) {
+              reg.update();
+            }).catch(function(){});
           });
         }
       }
