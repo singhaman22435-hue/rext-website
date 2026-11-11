@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { EQ_PRESETS } from '../services/audioEngine';
 import { EqualizerBand, EqualizerPreset } from '../types';
 import { VisualizerCanvas } from './VisualizerCanvas';
@@ -41,6 +41,17 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
   activePresetId,
   onSelectPreset,
 }) => {
+  // ESC key dismiss
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleReset = () => {
@@ -51,9 +62,18 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bass-lab-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-fade-in"
+      style={{ overscrollBehavior: 'contain' }}
+    >
       {/* Modal Container */}
-      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl p-6 md:p-8 space-y-6">
+      <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl p-5 sm:p-7 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4">
           <div className="flex items-center gap-3">
@@ -61,11 +81,11 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-[var(--text-main)]">
-                Equalizer & Bass
+              <h2 id="bass-lab-title" className="text-xl font-bold tracking-tight text-[var(--text-main)]">
+                Equalizer & Bass Lab
               </h2>
               <p className="text-xs text-[var(--text-muted)]">
-                Tune bass boost, 5-band EQ frequencies, and spatial sound
+                Tune bass boost, 5-band EQ frequencies, and 3D spatial sound
               </p>
             </div>
           </div>
@@ -74,7 +94,7 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
             <button
               onClick={handleReset}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-surface-hover)] text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
-              title="Reset"
+              title="Reset to flat"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               Reset
@@ -82,6 +102,7 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
             <button
               onClick={onClose}
               className="p-1.5 rounded-xl bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+              aria-label="Close Equalizer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -110,7 +131,7 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
                 <Flame className="w-3.5 h-3.5" /> Low-Shelf Filter
               </span>
               <h3 className="text-base font-bold text-[var(--text-main)]">
-                Bass Boost
+                Sub-Bass Impact
               </h3>
             </div>
             <span className="text-2xl font-black font-mono text-[var(--accent-orange)]">
@@ -125,7 +146,8 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
             step="1"
             value={bassBoost}
             onChange={(e) => onBassChange(parseFloat(e.target.value))}
-            className="w-full h-2 rounded-full cursor-pointer"
+            className="w-full h-2 rounded-full cursor-pointer accent-[var(--accent-orange)]"
+            aria-label="Bass Boost level in dB"
           />
 
           <div className="flex justify-between text-xs text-[var(--text-muted)] font-mono">
@@ -142,14 +164,14 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
               { label: 'Subtle (+4 dB)', val: 4 },
               { label: 'Punchy (+8 dB)', val: 8 },
               { label: 'Deep (+12 dB)', val: 12 },
-              { label: 'Max (+16 dB)', val: 16 },
+              { label: 'Club (+16 dB)', val: 16 },
             ].map((pill) => (
               <button
                 key={pill.val}
                 onClick={() => onBassChange(pill.val)}
                 className={`px-3 py-1 rounded-xl text-xs font-medium transition-colors ${
                   bassBoost === pill.val
-                    ? 'bg-[var(--accent-orange)] text-white font-bold'
+                    ? 'bg-[var(--accent-orange)] text-white font-bold shadow-sm'
                     : 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
               >
@@ -181,7 +203,8 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
                     step="1"
                     value={band.gain}
                     onChange={(e) => onEqBandChange(idx, parseFloat(e.target.value))}
-                    className="h-28 -rotate-90 cursor-pointer"
+                    className="h-28 -rotate-90 cursor-pointer accent-[var(--accent-orange)]"
+                    aria-label={`Equalizer band ${band.label}`}
                   />
                 </div>
 
@@ -207,7 +230,7 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
                   onClick={() => onSelectPreset(preset)}
                   className={`p-2.5 rounded-xl text-left text-xs font-medium transition-colors ${
                     activePresetId === preset.id
-                      ? 'bg-[var(--accent-orange)] text-white font-bold'
+                      ? 'bg-[var(--accent-orange)] text-white font-bold shadow-sm'
                       : 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
                   }`}
                 >
@@ -236,7 +259,8 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
                 step="1"
                 value={trebleBoost}
                 onChange={(e) => onTrebleChange(parseFloat(e.target.value))}
-                className="w-full h-1.5 rounded-full cursor-pointer"
+                className="w-full h-1.5 rounded-full cursor-pointer accent-[var(--accent-blue)]"
+                aria-label="Treble boost in dB"
               />
             </div>
 
@@ -254,6 +278,7 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
                 className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
                   spatialAudio ? 'bg-[var(--accent-blue)]' : 'bg-black/20 dark:bg-white/20'
                 }`}
+                aria-label="Toggle Spatial Audio"
               >
                 <div
                   className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${

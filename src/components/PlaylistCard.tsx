@@ -25,12 +25,16 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
       }`}
     >
       {/* Cover Artwork */}
-      <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3 shadow-sm">
+      <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3 shadow-sm bg-black/10 dark:bg-white/5">
         <img
           src={playlist.coverUrl}
           alt={playlist.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src =
+              'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400';
+          }}
         />
 
         {/* Floating Play Button */}
@@ -40,7 +44,8 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
             onPlayDirect();
           }}
           className="absolute bottom-2.5 right-2.5 w-11 h-11 rounded-full bg-gradient-to-r from-[var(--accent-orange)] to-[#FF7A26] text-white flex items-center justify-center shadow-xl shadow-[var(--accent-glow)] opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110 active:scale-95"
-          title="Play Playlist"
+          title={`Play ${playlist.name}`}
+          aria-label={`Play ${playlist.name}`}
         >
           <Play className="w-4 h-4 fill-current translate-x-0.5" />
         </button>

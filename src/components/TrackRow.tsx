@@ -73,6 +73,10 @@ export const TrackRow: React.FC<TrackRowProps> = ({
             alt={track.title}
             className="w-full h-full object-cover"
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src =
+                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+            }}
           />
           {isCurrent && (
             <div className="absolute inset-0 bg-black/35 flex items-center justify-center">

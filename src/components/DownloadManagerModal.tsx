@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DownloadItem, Track } from '../types';
 import { StorageService } from '../services/storageService';
 import {
@@ -29,6 +29,17 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
   onDeleteDownload,
   currentPlayingId,
 }) => {
+  // ESC key dismiss
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleExportFile = async (item: DownloadItem) => {
@@ -54,16 +65,25 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="download-manager-title"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-fade-in"
+      style={{ overscrollBehavior: 'contain' }}
+    >
       <div className="relative w-full max-w-2xl max-h-[85vh] rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)] relative z-10">
+        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-[var(--border-color)] relative z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[var(--accent-blue)]/15 text-[var(--accent-blue)] flex items-center justify-center border border-[var(--accent-blue)]/30">
               <HardDrive className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-[var(--text-main)] flex items-center gap-2">
+              <h3 id="download-manager-title" className="text-xl font-bold text-[var(--text-main)] flex items-center gap-2">
                 Downloads
                 <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--accent-blue)]/15 text-[var(--accent-blue)] font-mono font-bold">
                   {downloads.length} Songs
@@ -78,13 +98,14 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+            aria-label="Close Downloads"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* List of Downloads */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
           {downloads.length > 0 ? (
             downloads.map((item) => {
               const isPlaying = currentPlayingId === item.trackId;
@@ -102,12 +123,16 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
                     <img
                       src={item.track.coverUrl}
                       alt={item.track.title}
-                      className="w-12 h-12 rounded-xl object-cover shadow-sm"
+                      className="w-12 h-12 rounded-xl object-cover shadow-sm shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+                      }}
                     />
                     <div className="min-w-0">
                       <p className="font-bold text-sm text-[var(--text-main)] truncate flex items-center gap-1.5">
-                        {item.track.title}
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--accent-blue)] flex-shrink-0" />
+                        <span className="truncate">{item.track.title}</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[var(--accent-blue)] shrink-0" />
                       </p>
                       <p className="text-xs text-[var(--text-muted)] truncate">{item.track.artist}</p>
                       <div className="flex items-center gap-2 text-[10px] text-[var(--text-sub)] mt-0.5">
@@ -119,7 +144,7 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => onPlayTrack(item.track)}
                       className={`p-2 rounded-xl transition-all ${
@@ -128,6 +153,7 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
                           : 'bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[var(--text-main)]'
                       }`}
                       title="Play Track"
+                      aria-label={`Play ${item.track.title}`}
                     >
                       <Play className="w-4 h-4 fill-current" />
                     </button>
@@ -136,6 +162,7 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
                       onClick={() => handleExportFile(item)}
                       className="p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-[var(--accent-blue)] text-[var(--text-muted)] hover:text-white transition-all"
                       title="Save MP3 file to computer"
+                      aria-label="Export MP3"
                     >
                       <Download className="w-4 h-4" />
                     </button>
@@ -144,6 +171,7 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
                       onClick={() => onDeleteDownload(item.trackId)}
                       className="p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-red-500/20 text-[var(--text-muted)] hover:text-red-500 transition-all"
                       title="Remove from Offline Storage"
+                      aria-label="Delete offline track"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

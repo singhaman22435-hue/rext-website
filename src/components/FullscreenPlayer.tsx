@@ -1,6 +1,7 @@
-import React from 'react';
-import { Track } from '../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { Track, LyricLine } from '../types';
 import { VisualizerCanvas } from './VisualizerCanvas';
+import { LyricsService, LyricsResult } from '../services/lyricsService';
 import {
   Play,
   Pause,
@@ -11,7 +12,10 @@ import {
   Minimize2,
   Zap,
   Mic2,
-  Heart
+  Heart,
+  Activity,
+  Sparkles,
+  ChevronRight
 } from 'lucide-react';
 
 interface FullscreenPlayerProps {
@@ -55,6 +59,54 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
   isLiked,
   onToggleLike,
 }) => {
+  const [activeTab, setActiveTab] = useState<'visualizer' | 'lyrics'>('visualizer');
+  const [lyricsData, setLyricsData] = useState<LyricsResult | null>(null);
+  const activeLineRef = useRef<HTMLDivElement | null>(null);
+  const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Load full lyrics whenever track changes or player opens
+  useEffect(() => {
+    if (isOpen && track) {
+      LyricsService.getLyrics(track).then((res) => {
+        setLyricsData(res);
+      });
+    }
+  }, [isOpen, track?.id]);
+
+  // Handle ESC key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  const lyrics = lyricsData?.synced && lyricsData.synced.length > 0 ? lyricsData.synced : track?.lyrics || [];
+
+  let activeIndex = -1;
+  let activeLyricText = '';
+  for (let i = 0; i < lyrics.length; i++) {
+    if (currentTime >= lyrics[i].time) {
+      activeIndex = i;
+      activeLyricText = lyrics[i].text;
+    } else {
+      break;
+    }
+  }
+
+  // Smooth scroll active line in lyrics tab
+  useEffect(() => {
+    if (activeTab === 'lyrics' && activeLineRef.current && lyricsContainerRef.current) {
+      activeLineRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [activeIndex, activeTab]);
+
   if (!isOpen || !track) return null;
 
   const formatTime = (secs: number) => {
@@ -66,19 +118,17 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0;
 
-  const lyrics = track.lyrics || [];
-  let activeLyric = '';
-  for (let i = 0; i < lyrics.length; i++) {
-    if (currentTime >= lyrics[i].time) {
-      activeLyric = lyrics[i].text;
-    }
-  }
-
   return (
-    <div className="fixed inset-0 z-50 bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-between p-6 md:p-12 overflow-hidden animate-fade-in select-none">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Now Playing: ${track.title}`}
+      className="fixed inset-0 z-50 bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-between p-4 sm:p-6 md:p-10 overflow-hidden animate-fade-in select-none"
+      style={{ overscrollBehavior: 'contain' }}
+    >
       {/* Background Ambient Glows */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-10 blur-3xl scale-150 pointer-events-none"
+        className="absolute inset-0 bg-cover bg-center opacity-15 blur-3xl scale-150 pointer-events-none transition-all duration-700"
         style={{ backgroundImage: `url(${track.coverUrl})` }}
       />
       <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-[#FF5500]/10 rounded-full blur-[160px] pointer-events-none" />
@@ -91,26 +141,58 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
             R
           </div>
           <div>
-            <h4 className="text-xs uppercase font-bold tracking-widest text-[var(--text-muted)]">
-              Now Playing
+            <h4 className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)]">
+              Theater Mode
             </h4>
-            <p className="text-sm font-semibold text-[var(--text-main)]">{track.album}</p>
+            <p className="text-xs sm:text-sm font-semibold text-[var(--text-main)] truncate max-w-[200px] sm:max-w-xs">
+              {track.album || track.title}
+            </p>
           </div>
+        </div>
+
+        {/* Tab Switcher: Visualizer vs Synced Lyrics */}
+        <div className="flex items-center gap-1 p-1 bg-black/10 dark:bg-white/10 rounded-2xl backdrop-blur-md border border-[var(--border-color)]">
+          <button
+            onClick={() => setActiveTab('visualizer')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'visualizer'
+                ? 'bg-[var(--accent-orange)] text-white shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Spectrum</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('lyrics')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === 'lyrics'
+                ? 'bg-[var(--accent-orange)] text-white shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            <Mic2 className="w-3.5 h-3.5" />
+            <span>Lyrics</span>
+            {lyrics.length > 0 && (
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            )}
+          </button>
         </div>
 
         <button
           onClick={onClose}
-          className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[var(--text-main)] transition-colors"
-          title="Exit Fullscreen (ESC)"
+          className="p-2 sm:p-3 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[var(--text-main)] transition-colors"
+          title="Exit Theater Mode (ESC)"
+          aria-label="Exit Fullscreen"
         >
-          <Minimize2 className="w-6 h-6" />
+          <Minimize2 className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       </div>
 
-      {/* Center Stage: Rotating Vinyl + Spectrum Visualizer */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto w-full my-auto">
+      {/* Center Stage: Rotating Vinyl + Spectrum / Lyrics */}
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 items-center max-w-6xl mx-auto w-full my-auto py-2">
         {/* Left: Vinyl Disc Presentation */}
-        <div className="flex flex-col items-center justify-center space-y-6">
+        <div className="flex flex-col items-center justify-center space-y-4 sm:space-y-6">
           <div className="relative group">
             {/* Pulsing Bass Glow beneath the disc */}
             <div
@@ -122,96 +204,168 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
 
             {/* Vinyl record disc */}
             <div
-              className={`relative w-64 h-64 md:w-88 md:h-88 rounded-full bg-black border-4 border-[var(--border-color)] shadow-2xl flex items-center justify-center transition-transform ${
+              className={`relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full bg-black border-4 border-[var(--border-color)] shadow-2xl flex items-center justify-center transition-transform ${
                 isPlaying ? 'animate-spin-vinyl' : 'animate-spin-vinyl animate-spin-vinyl-paused'
               }`}
             >
-              <div className="absolute inset-4 rounded-full border border-white/10 pointer-events-none" />
-              <div className="absolute inset-8 rounded-full border border-white/10 pointer-events-none" />
-              <div className="absolute inset-14 rounded-full border border-white/10 pointer-events-none" />
-              <div className="absolute inset-20 rounded-full border border-white/10 pointer-events-none" />
+              <div className="absolute inset-3 sm:inset-4 rounded-full border border-white/10 pointer-events-none" />
+              <div className="absolute inset-6 sm:inset-8 rounded-full border border-white/10 pointer-events-none" />
+              <div className="absolute inset-10 sm:inset-14 rounded-full border border-white/10 pointer-events-none" />
+              <div className="absolute inset-16 sm:inset-20 rounded-full border border-white/10 pointer-events-none" />
 
               {/* Album art center sticker */}
-              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-[#1C1612] shadow-inner">
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-[#1C1612] shadow-inner">
                 <img
                   src={track.coverUrl}
                   alt={track.title}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+                  }}
                 />
-                <div className="absolute inset-0 m-auto w-5 h-5 rounded-full bg-black border-2 border-white/30" />
+                <div className="absolute inset-0 m-auto w-4 h-4 rounded-full bg-black border-2 border-white/30" />
               </div>
             </div>
           </div>
 
           {/* Quick Track Info Under Vinyl */}
-          <div className="text-center space-y-1">
-            <h2 className="text-2xl md:text-3xl font-extrabold text-[var(--text-main)] flex items-center justify-center gap-3">
-              {track.title}
+          <div className="text-center space-y-1 max-w-sm px-2">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[var(--text-main)] flex items-center justify-center gap-2 sm:gap-3">
+              <span className="truncate">{track.title}</span>
               <button
                 onClick={onToggleLike}
-                className={`transition-colors ${
-                  isLiked ? 'text-[var(--accent-orange)]' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
+                className={`transition-colors shrink-0 ${
+                  isLiked
+                    ? 'text-[var(--accent-orange)]'
+                    : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
                 }`}
+                aria-label="Toggle Like"
               >
-                <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
+                <Heart className={`w-5 h-5 sm:w-6 sm:h-6 ${isLiked ? 'fill-current' : ''}`} />
               </button>
             </h2>
-            <p className="text-base text-[var(--accent-blue)] font-medium">{track.artist}</p>
-          </div>
-        </div>
-
-        {/* Right: Live Dynamic Waveform & Synchronized Karaoke Lyrics */}
-        <div className="flex flex-col justify-center space-y-6 bg-[var(--bg-card)] p-6 md:p-8 rounded-3xl border border-[var(--border-color)] shadow-xl">
-          {/* Visualizer inside theater */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center text-xs text-[var(--text-muted)]">
-              <span className="flex items-center gap-1.5 font-bold text-[var(--text-main)]">
-                <Zap className="w-4 h-4 text-[var(--accent-orange)]" /> High-Res Audio Spectrum
-              </span>
-              <span className="font-mono text-[11px] text-[var(--accent-blue)]">
-                {track.bitrate}
-              </span>
-            </div>
-            <VisualizerCanvas height={90} mode="bars" showControls={true} isPlaying={isPlaying} />
-          </div>
-
-          {/* Live Karaoke Highlight */}
-          <div className="py-6 px-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] min-h-[140px] flex flex-col justify-center text-center space-y-2 shadow-inner">
-            <span className="text-[10px] uppercase font-bold tracking-widest text-[var(--accent-orange)] flex items-center justify-center gap-1.5">
-              <Mic2 className="w-3 h-3" /> Live Lyric Sync
-            </span>
-            <p className="text-xl md:text-2xl font-bold text-[var(--text-main)]">
-              {activeLyric || 'Enjoy the smooth music flow...'}
+            <p className="text-sm sm:text-base text-[var(--accent-blue)] font-medium truncate">
+              {track.artist}
             </p>
           </div>
+        </div>
 
-          {/* Interactive Bass Boost Slider in Theater */}
-          <div className="p-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-[var(--accent-orange)]" /> Sub-Bass Impact
+        {/* Right Stage: Tabbed (Visualizer vs Interactive Lyrics) */}
+        {activeTab === 'visualizer' ? (
+          <div className="flex flex-col justify-center space-y-4 sm:space-y-6 bg-[var(--bg-card)]/90 p-5 sm:p-7 rounded-3xl border border-[var(--border-color)] shadow-xl backdrop-blur-md">
+            {/* Visualizer inside theater */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs text-[var(--text-muted)]">
+                <span className="flex items-center gap-1.5 font-bold text-[var(--text-main)]">
+                  <Zap className="w-4 h-4 text-[var(--accent-orange)]" /> High-Res Audio Spectrum
+                </span>
+                <span className="font-mono text-[11px] text-[var(--accent-blue)]">
+                  {track.bitrate}
+                </span>
+              </div>
+              <VisualizerCanvas height={85} mode="bars" showControls={true} isPlaying={isPlaying} />
+            </div>
+
+            {/* Live Karaoke Highlight Box (Clickable to switch to full lyrics) */}
+            <div
+              onClick={() => setActiveTab('lyrics')}
+              className="py-5 px-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] min-h-[120px] flex flex-col justify-center text-center space-y-1.5 shadow-inner cursor-pointer hover:border-[var(--accent-orange)]/50 transition-all group"
+            >
+              <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-[var(--accent-orange)] px-1">
+                <span className="flex items-center gap-1">
+                  <Mic2 className="w-3 h-3" /> Live Lyric Sync
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)] group-hover:text-[var(--accent-orange)] flex items-center transition-colors">
+                  View Full <ChevronRight className="w-3 h-3 ml-0.5" />
+                </span>
+              </div>
+              <p className="text-lg sm:text-xl font-bold text-[var(--text-main)] group-hover:scale-102 transition-transform">
+                {activeLyricText || 'Enjoy the music flow...'}
+              </p>
+            </div>
+
+            {/* Interactive Bass Boost Slider in Theater */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-[var(--accent-orange)]" /> Sub-Bass Impact
+                </span>
+                <span className="text-xs font-mono font-bold text-[var(--accent-orange)]">
+                  +{bassBoost.toFixed(0)} dB
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="18"
+                step="0.5"
+                value={bassBoost}
+                onChange={(e) => onBassChange(parseFloat(e.target.value))}
+                className="w-full h-2 rounded-full cursor-pointer accent-[var(--accent-orange)]"
+              />
+            </div>
+          </div>
+        ) : (
+          /* Live Synchronized Lyrics Stage (Apple Music Style) */
+          <div className="flex flex-col h-[340px] sm:h-[400px] bg-[var(--bg-card)]/90 rounded-3xl border border-[var(--border-color)] shadow-xl backdrop-blur-md overflow-hidden">
+            {/* Header */}
+            <div className="p-3 px-5 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--bg-card)] text-xs">
+              <span className="font-bold flex items-center gap-1.5 text-[var(--text-main)]">
+                <Mic2 className="w-3.5 h-3.5 text-[var(--accent-orange)]" /> Synchronized Stream
               </span>
-              <span className="text-xs font-mono font-bold text-[var(--accent-orange)]">
-                +{bassBoost.toFixed(0)} dB
+              <span className="text-[10px] font-mono text-[var(--text-muted)]">
+                💡 Click any line to seek
               </span>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="18"
-              step="0.5"
-              value={bassBoost}
-              onChange={(e) => onBassChange(parseFloat(e.target.value))}
-              className="w-full h-2 rounded-full cursor-pointer"
-            />
+
+            {/* Scrollable Lyrics Stream */}
+            <div
+              ref={lyricsContainerRef}
+              className="flex-1 overflow-y-auto px-4 py-8 space-y-5 text-center scroll-smooth bg-[var(--bg-surface)]/30"
+            >
+              {lyrics.length > 0 ? (
+                lyrics.map((line, idx) => {
+                  const isActive = idx === activeIndex;
+                  const isPast = idx < activeIndex;
+
+                  return (
+                    <div
+                      key={idx}
+                      ref={isActive ? activeLineRef : null}
+                      onClick={() => onSeek(line.time)}
+                      className={`cursor-pointer transition-all duration-300 py-1.5 px-3 rounded-xl block max-w-lg mx-auto ${
+                        isActive
+                          ? 'text-xl sm:text-2xl font-extrabold text-[var(--accent-orange)] scale-105 filter drop-shadow-[0_2px_8px_var(--accent-glow)]'
+                          : isPast
+                          ? 'text-sm sm:text-base font-medium text-[var(--text-muted)] opacity-50 hover:opacity-100 hover:text-[var(--text-main)]'
+                          : 'text-sm sm:text-base font-medium text-[var(--text-sub)] opacity-80 hover:opacity-100 hover:text-[var(--text-main)]'
+                      }`}
+                    >
+                      <p>{line.text}</p>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-20 text-center space-y-3">
+                  <Sparkles className="w-8 h-8 text-[var(--accent-orange)] mx-auto animate-bounce" />
+                  <p className="text-base font-bold text-[var(--text-main)]">
+                    No Synced Lyrics Available
+                  </p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Enjoy the smooth instrumental beats and sub-bass frequencies.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Bottom Controls Bar */}
-      <div className="relative z-10 max-w-4xl mx-auto w-full space-y-4">
+      <div className="relative z-10 max-w-4xl mx-auto w-full space-y-3 sm:space-y-4">
         {/* Scrubber */}
-        <div className="flex items-center gap-4 text-xs font-mono text-[var(--text-muted)]">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono text-[var(--text-muted)]">
           <span>{formatTime(currentTime)}</span>
           <div
             onClick={(e) => {
@@ -242,36 +396,46 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
           </div>
 
           {/* Center Playback Controls */}
-          <div className="flex items-center gap-6 mx-auto sm:mx-0">
+          <div className="flex items-center gap-4 sm:gap-6 mx-auto sm:mx-0">
             <button
               onClick={onPrev}
-              className="p-3 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+              className="p-2 sm:p-3 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+              title="Previous Track"
+              aria-label="Previous Track"
             >
-              <SkipBack className="w-7 h-7" />
+              <SkipBack className="w-6 h-6 sm:w-7 sm:h-7" />
             </button>
 
             <button
               onClick={onTogglePlay}
-              className="w-16 h-16 rounded-full bg-gradient-to-r from-[var(--accent-orange)] to-[#FF7A26] text-white flex items-center justify-center shadow-xl shadow-[var(--accent-glow)] hover:scale-105 active:scale-95 transition-transform"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-[var(--accent-orange)] to-[#FF7A26] text-white flex items-center justify-center shadow-xl shadow-[var(--accent-glow)] hover:scale-105 active:scale-95 transition-transform"
+              title={isPlaying ? 'Pause' : 'Play'}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
-                <Pause className="w-8 h-8 fill-current" />
+                <Pause className="w-7 h-7 sm:w-8 sm:h-8 fill-current" />
               ) : (
-                <Play className="w-8 h-8 fill-current translate-x-0.5" />
+                <Play className="w-7 h-7 sm:w-8 sm:h-8 fill-current translate-x-0.5" />
               )}
             </button>
 
             <button
               onClick={onNext}
-              className="p-3 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+              className="p-2 sm:p-3 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+              title="Next Track"
+              aria-label="Next Track"
             >
-              <SkipForward className="w-7 h-7" />
+              <SkipForward className="w-6 h-6 sm:w-7 sm:h-7" />
             </button>
           </div>
 
           {/* Right Volume */}
           <div className="hidden sm:flex items-center gap-3">
-            <button onClick={onToggleMute} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
+            <button
+              onClick={onToggleMute}
+              className="text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
               {isMuted || volume === 0 ? (
                 <VolumeX className="w-5 h-5 text-red-500" />
               ) : (
@@ -285,7 +449,8 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
               step="0.01"
               value={isMuted ? 0 : volume}
               onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-              className="w-24 h-1.5 rounded-full"
+              className="w-24 h-1.5 rounded-full cursor-pointer accent-[var(--accent-orange)]"
+              aria-label="Volume"
             />
           </div>
         </div>

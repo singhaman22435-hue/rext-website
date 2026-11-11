@@ -128,6 +128,10 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 src={currentTrack.coverUrl}
                 alt={currentTrack.title}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+                }}
               />
               <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                 <Maximize2 className="w-3.5 h-3.5 text-white/80" />
@@ -153,13 +157,26 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
 
           {/* Quick Controls */}
           <div className="flex items-center gap-1 shrink-0">
+            {/* Quick Lyrics on Mobile */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenLyrics();
+              }}
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--accent-orange)] transition-colors"
+              title="Lyrics"
+              aria-label="Open Lyrics"
+            >
+              <Mic2 className="w-4 h-4" />
+            </button>
+
             {/* Like Button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleLike();
               }}
-              className={`min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl transition-colors ${
+              className={`min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl transition-colors ${
                 isLiked ? 'text-[var(--accent-orange)]' : 'text-[var(--text-muted)]'
               }`}
               aria-label={isLiked ? 'Unlike' : 'Like'}
@@ -189,7 +206,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 e.stopPropagation();
                 onNext();
               }}
-              className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--text-main)]"
               aria-label="Next track"
             >
               <SkipForward className="w-4 h-4" />
@@ -236,6 +253,10 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 src={currentTrack.coverUrl}
                 alt={currentTrack.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+                }}
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                 <Maximize2 className="w-4 h-4 text-white" />
@@ -267,6 +288,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                   isLiked ? 'text-[var(--accent-orange)]' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
                 }`}
                 title={isLiked ? 'Liked' : 'Like'}
+                aria-label={isLiked ? 'Liked' : 'Like'}
               >
                 <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
               </button>
@@ -288,6 +310,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                     ? `Downloading ${downloadProgress}%`
                     : 'Download MP3'
                 }
+                aria-label="Download Track"
               >
                 {isDownloaded ? (
                   <Check className="w-4 h-4 text-[var(--accent-blue)]" />
@@ -308,6 +331,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 isShuffle ? 'text-[var(--accent-orange)]' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
               }`}
               title="Shuffle"
+              aria-label="Toggle Shuffle"
             >
               <Shuffle className="w-4 h-4" />
             </button>
@@ -316,6 +340,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onPrev}
               className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
               title="Previous"
+              aria-label="Previous Track"
             >
               <SkipBack className="w-5 h-5" />
             </button>
@@ -325,6 +350,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onTogglePlay}
               className="w-11 h-11 rounded-full bg-[var(--accent-orange)] text-white flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-all"
               title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5 fill-current" />
@@ -337,6 +363,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onNext}
               className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
               title="Next"
+              aria-label="Next Track"
             >
               <SkipForward className="w-5 h-5" />
             </button>
@@ -347,6 +374,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 repeatMode !== 'off' ? 'text-[var(--accent-orange)]' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
               }`}
               title={`Repeat: ${repeatMode}`}
+              aria-label={`Repeat mode: ${repeatMode}`}
             >
               {repeatMode === 'one' ? (
                 <Repeat1 className="w-4 h-4" />
@@ -368,6 +396,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                     : 'bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
                 title="Bass Boost"
+                aria-label="Bass Boost Controls"
               >
                 <Flame className="w-3.5 h-3.5" />
                 <span>Bass</span>
@@ -389,7 +418,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                     step="1"
                     value={bassBoost}
                     onChange={(e) => onBassChange(parseFloat(e.target.value))}
-                    className="w-full h-2 rounded-full cursor-pointer"
+                    className="w-full h-2 rounded-full cursor-pointer accent-[var(--accent-orange)]"
                   />
                   <div className="flex justify-between text-[10px] text-[var(--text-muted)]">
                     <button onClick={() => onBassChange(0)} className="hover:text-[var(--text-main)]">0dB</button>
@@ -420,6 +449,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                     : 'bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-red-500'
                 }`}
                 title={isVideoVisible ? 'Hide Video' : 'Watch Official Music Video'}
+                aria-label={isVideoVisible ? 'Hide Video' : 'Watch Video'}
               >
                 {isVideoVisible ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
                 <span className="hidden lg:inline text-[11px]">{isVideoVisible ? 'Hide' : 'Video'}</span>
@@ -431,6 +461,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onOpenBassLab}
               className="p-2 rounded-xl bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
               title="Equalizer"
+              aria-label="Open Equalizer"
             >
               <Sliders className="w-4 h-4" />
             </button>
@@ -439,7 +470,8 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
             <button
               onClick={onOpenLyrics}
               className="p-2 rounded-xl bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors hidden sm:block"
-              title="Lyrics"
+              title="Lyrics (Live Karaoke)"
+              aria-label="Open Lyrics"
             >
               <Mic2 className="w-4 h-4" />
             </button>
@@ -450,6 +482,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 onClick={onToggleMute}
                 className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
                 title={isMuted ? 'Unmute' : 'Mute'}
+                aria-label={isMuted ? 'Unmute' : 'Mute'}
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX className="w-4 h-4 text-red-500" />
@@ -464,8 +497,9 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 step="0.02"
                 value={isMuted ? 0 : volume}
                 onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-                className="w-20 h-1.5 bg-black/15 dark:bg-white/15 rounded-full cursor-pointer"
+                className="w-20 h-1.5 bg-black/15 dark:bg-white/15 rounded-full cursor-pointer accent-[var(--accent-orange)]"
                 title={`Volume: ${Math.round(volume * 100)}%`}
+                aria-label="Volume slider"
               />
             </div>
           </div>

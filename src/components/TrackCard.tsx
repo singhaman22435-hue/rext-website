@@ -51,6 +51,10 @@ export const TrackCard: React.FC<TrackCardProps> = ({
           alt={track.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src =
+              'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+          }}
         />
 
         {/* Floating Play Button */}

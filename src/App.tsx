@@ -48,6 +48,7 @@ import { InstallAppModal } from './components/InstallAppModal';
 import { MobileNav } from './components/MobileNav';
 import { MobileLibraryDrawer } from './components/MobileLibraryDrawer';
 import { proService } from './services/proService';
+import { LyricsService } from './services/lyricsService';
 
 import {
   Play,
@@ -287,6 +288,13 @@ export const App: React.FC = () => {
         audioEngine.setTrebleBoost(trebleBoost);
         audioEngine.setVolume(isMuted ? 0 : volume);
       }
+
+      // Prefetch synced lyrics in background for instant lyrics/fullscreen
+      LyricsService.getLyrics(track).then((res) => {
+        if (res?.synced && res.synced.length > 0) {
+          track.lyrics = res.synced;
+        }
+      }).catch(() => {});
 
       setIsPlaying(true);
     },
