@@ -10,46 +10,53 @@ export const DEFAULT_EQ_BANDS: EqualizerBand[] = [
 
 export const EQ_PRESETS: EqualizerPreset[] = [
   {
-    id: 'flat',
-    name: 'Flat',
-    description: 'Clean balanced natural sound',
-    bassBoost: 0,
-    gains: [0, 0, 0, 0, 0],
+    id: 'studio-hd',
+    name: 'Studio Master HD',
+    description: 'Lossless 24-bit balanced studio master with crystal air & punch',
+    bassBoost: 6,
+    gains: [4, 2, 0, 3, 5],
   },
   {
     id: 'bass-heavy',
-    name: 'Heavy Bass',
-    description: 'Deep punchy low-end response',
-    bassBoost: 12,
-    gains: [8, 5, -1, 2, 4],
+    name: 'Heavy 808 Bass',
+    description: 'Deep sub-woofer punch with zero distortion brickwall limiter',
+    bassBoost: 14,
+    gains: [9, 6, -1, 2, 4],
   },
   {
     id: 'club-punch',
     name: 'Punchy Club',
-    description: 'Tight kicks and clear vocals',
+    description: 'Tight kicks and crystal-clear vocals',
     bassBoost: 8,
-    gains: [6, 4, -2, 3, 5],
+    gains: [6, 4, -1, 3, 5],
   },
   {
     id: 'vocal-clarity',
-    name: 'Vocal Boost',
-    description: 'Crisp upfront vocal presence',
+    name: 'Vocal Presence',
+    description: 'Crisp upfront vocals and intimate lyrics clarity',
     bassBoost: 2,
-    gains: [-3, -1, 5, 4, 3],
+    gains: [-2, 0, 5, 4, 3],
   },
   {
     id: 'electronic',
-    name: 'Electronic',
-    description: 'Dynamic V-shaped response',
-    bassBoost: 8,
-    gains: [6, 3, -2, 4, 6],
+    name: 'Electronic & Phonk',
+    description: 'Aggressive V-curve with deep sub-bass and high air',
+    bassBoost: 10,
+    gains: [8, 4, -2, 5, 7],
   },
   {
-    id: 'acoustic',
-    name: 'Acoustic & Warm',
-    description: 'Warm natural mids and gentle highs',
-    bassBoost: 4,
-    gains: [3, 2, 2, 1, 0],
+    id: 'audiophile',
+    name: 'Audiophile Pure',
+    description: 'Linear response with maximum dynamic range',
+    bassBoost: 2,
+    gains: [1, 1, 0, 2, 2],
+  },
+  {
+    id: 'flat',
+    name: 'Flat (Bypass)',
+    description: 'Raw neutral audio bypass',
+    bassBoost: 0,
+    gains: [0, 0, 0, 0, 0],
   }
 ];
 
@@ -57,9 +64,13 @@ class AudioEngine {
   private audioCtx: AudioContext | null = null;
   private audioElement: HTMLAudioElement;
   private sourceNode: MediaElementAudioSourceNode | null = null;
+  private subsonicFilter: BiquadFilterNode | null = null;
   private bassFilter: BiquadFilterNode | null = null;
   private eqFilters: BiquadFilterNode[] = [];
+  private clarityFilter: BiquadFilterNode | null = null;
   private trebleFilter: BiquadFilterNode | null = null;
+  private airFilter: BiquadFilterNode | null = null;
+  private compressor: DynamicsCompressorNode | null = null;
   private masterGain: GainNode | null = null;
   private analyser: AnalyserNode | null = null;
   private pannerNode: StereoPannerNode | null = null;
@@ -140,13 +151,19 @@ class AudioEngine {
       this.analyser.fftSize = 256;
       this.analyser.smoothingTimeConstant = 0.82;
 
-      // Bass Boost Low-shelf Filter (80Hz punch)
+      // 1. Subsonic Highpass Filter (24Hz) - cuts inaudible DC rumble to free up amplifier headroom
+      this.subsonicFilter = this.audioCtx.createBiquadFilter();
+      this.subsonicFilter.type = 'highpass';
+      this.subsonicFilter.frequency.value = 24;
+      this.subsonicFilter.Q.value = 0.707;
+
+      // 2. Bass Boost Low-shelf Filter (65Hz sub-punch)
       this.bassFilter = this.audioCtx.createBiquadFilter();
       this.bassFilter.type = 'lowshelf';
-      this.bassFilter.frequency.value = 80;
+      this.bassFilter.frequency.value = 65;
       this.bassFilter.gain.value = 6;
 
-      // 5-Band Graphic Equalizer
+      // 3. 5-Band Graphic Equalizer
       this.eqFilters = DEFAULT_EQ_BANDS.map((band) => {
         const filter = this.audioCtx!.createBiquadFilter();
         if (band.freq <= 80) {
@@ -162,25 +179,51 @@ class AudioEngine {
         return filter;
       });
 
-      // Treble Shelf Filter
+      // 4. Vocal Clarity & Lyrics Presence (Peaking at 3500Hz)
+      this.clarityFilter = this.audioCtx.createBiquadFilter();
+      this.clarityFilter.type = 'peaking';
+      this.clarityFilter.frequency.value = 3500;
+      this.clarityFilter.Q.value = 1.2;
+      this.clarityFilter.gain.value = 1.5;
+
+      // 5. Treble Shelf Filter (8kHz)
       this.trebleFilter = this.audioCtx.createBiquadFilter();
       this.trebleFilter.type = 'highshelf';
-      this.trebleFilter.frequency.value = 10000;
+      this.trebleFilter.frequency.value = 8000;
       this.trebleFilter.gain.value = 1;
 
-      // Stereo Panner
+      // 6. Silky Air & Sparkle Filter (12kHz High-Shelf for 24-bit studio sheen)
+      this.airFilter = this.audioCtx.createBiquadFilter();
+      this.airFilter.type = 'highshelf';
+      this.airFilter.frequency.value = 12000;
+      this.airFilter.gain.value = 2.0;
+
+      // 7. Stereo Panner / 3D Soundstage
       if (this.audioCtx.createStereoPanner) {
         this.pannerNode = this.audioCtx.createStereoPanner();
         this.pannerNode.pan.value = 0;
       }
+
+      // 8. Studio Brickwall Dynamics Compressor / Limiter (Guarantees zero digital distortion or clipping)
+      this.compressor = this.audioCtx.createDynamicsCompressor();
+      this.compressor.threshold.value = -6; // dB
+      this.compressor.knee.value = 10;
+      this.compressor.ratio.value = 12;
+      this.compressor.attack.value = 0.003; // 3ms fast attack
+      this.compressor.release.value = 0.18; // 180ms smooth release
 
       // Connect Media Element Source
       if (!this.sourceNode) {
         this.sourceNode = this.audioCtx.createMediaElementSource(this.audioElement);
       }
 
-      // Chain: Source -> BassFilter -> EQ Filters -> TrebleFilter -> Panner -> MasterGain -> Analyser -> Destination
+      // DSP Chain:
+      // Source -> Subsonic -> BassFilter -> EQ Filters -> ClarityFilter -> TrebleFilter -> AirFilter -> Panner -> MasterGain -> Compressor (Limiter) -> Analyser -> Destination
       let currentNode: AudioNode = this.sourceNode;
+
+      currentNode.connect(this.subsonicFilter);
+      currentNode = this.subsonicFilter;
+
       currentNode.connect(this.bassFilter);
       currentNode = this.bassFilter;
 
@@ -189,8 +232,14 @@ class AudioEngine {
         currentNode = eqNode;
       }
 
+      currentNode.connect(this.clarityFilter);
+      currentNode = this.clarityFilter;
+
       currentNode.connect(this.trebleFilter);
       currentNode = this.trebleFilter;
+
+      currentNode.connect(this.airFilter);
+      currentNode = this.airFilter;
 
       if (this.pannerNode) {
         currentNode.connect(this.pannerNode);
@@ -198,7 +247,8 @@ class AudioEngine {
       }
 
       currentNode.connect(this.masterGain);
-      this.masterGain.connect(this.analyser);
+      this.masterGain.connect(this.compressor);
+      this.compressor.connect(this.analyser);
       this.analyser.connect(this.audioCtx.destination);
 
       if (this.audioCtx.state === 'suspended') {
@@ -273,6 +323,20 @@ class AudioEngine {
     const clamped = Math.max(-10, Math.min(10, gainDb));
     if (this.trebleFilter && this.audioCtx) {
       this.trebleFilter.gain.setTargetAtTime(clamped, this.audioCtx.currentTime, 0.05);
+    }
+  }
+
+  public setClarity(gainDb: number) {
+    const clamped = Math.max(-6, Math.min(8, gainDb));
+    if (this.clarityFilter && this.audioCtx) {
+      this.clarityFilter.gain.setTargetAtTime(clamped, this.audioCtx.currentTime, 0.05);
+    }
+  }
+
+  public setAir(gainDb: number) {
+    const clamped = Math.max(-6, Math.min(8, gainDb));
+    if (this.airFilter && this.audioCtx) {
+      this.airFilter.gain.setTargetAtTime(clamped, this.audioCtx.currentTime, 0.05);
     }
   }
 

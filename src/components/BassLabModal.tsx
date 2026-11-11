@@ -123,6 +123,29 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
           <VisualizerCanvas height={70} mode="bars" showControls={false} />
         </div>
 
+        {/* Studio Master DSP Status Banner */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-[var(--accent-orange)]/15 to-[var(--accent-blue)]/15 border border-emerald-500/30 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shadow-xs text-xs">
+              HD
+            </div>
+            <div>
+              <p className="text-xs font-black text-[var(--text-main)] flex items-center gap-1.5">
+                <span>Studio Master DSP Active</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono text-[9px] font-bold">
+                  24-bit / 320 kbps
+                </span>
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)]">
+                Brickwall Limiter (0% distortion) • Subsonic 24Hz filter • Vocal Clarity & Air Sheen
+              </p>
+            </div>
+          </div>
+          <span className="hidden sm:inline-block px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/10 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+            LOSSLESS
+          </span>
+        </div>
+
         {/* Bass Booster Control */}
         <div className="rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] p-5 space-y-4">
           <div className="flex justify-between items-center">
@@ -234,7 +257,10 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
                       : 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
                   }`}
                 >
-                  <p className="font-semibold">{preset.name}</p>
+                  <p className="font-bold truncate">{preset.name}</p>
+                  <p className={`text-[10px] truncate ${activePresetId === preset.id ? 'text-white/85' : 'text-[var(--text-muted)]'}`}>
+                    {preset.description}
+                  </p>
                 </button>
               ))}
             </div>

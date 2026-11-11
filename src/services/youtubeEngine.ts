@@ -101,7 +101,9 @@ class YouTubeEngine {
           rel: 0,
           playsinline: 1,
           enablejsapi: 1,
-          origin: window.location.origin
+          origin: window.location.origin,
+          vq: 'hd1080',
+          suggestedQuality: 'hd1080'
         },
         events: {
           onReady: () => {
@@ -109,6 +111,9 @@ class YouTubeEngine {
             try {
               this.player.unMute();
               this.player.setVolume(this.currentVolume);
+              if (typeof this.player.setPlaybackQuality === 'function') {
+                this.player.setPlaybackQuality('hd1080');
+              }
             } catch {}
             const targetId = this.queuedVideoId || this.currentVideoId;
             if (targetId) {
@@ -118,6 +123,11 @@ class YouTubeEngine {
           onStateChange: (event: any) => {
             // YT.PlayerState: PLAYING = 1, PAUSED = 2, ENDED = 0, BUFFERING = 3
             if (event.data === 1) {
+              try {
+                if (typeof this.player.setPlaybackQuality === 'function') {
+                  this.player.setPlaybackQuality('hd1080');
+                }
+              } catch {}
               if (this.onPlayStateChange) this.onPlayStateChange(true);
               this.startProgressPolling();
             } else if (event.data === 2) {
@@ -164,10 +174,13 @@ class YouTubeEngine {
     }
 
     try {
-      this.player.loadVideoById(videoId, 0);
+      this.player.loadVideoById(videoId, 0, 'hd1080');
       try {
         this.player.unMute();
         this.player.setVolume(this.currentVolume);
+        if (typeof this.player.setPlaybackQuality === 'function') {
+          this.player.setPlaybackQuality('hd1080');
+        }
       } catch {}
       this.player.playVideo();
       this.startProgressPolling();
