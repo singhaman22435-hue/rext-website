@@ -57,15 +57,17 @@ class YouTubeEngine {
       container = document.createElement('div');
       container.id = 'rext-youtube-container';
       container.style.position = 'fixed';
-      container.style.top = '-9999px';
-      container.style.left = '-9999px';
-      container.style.width = '320px';
-      container.style.height = '180px';
-      container.style.opacity = '0.001';
+      container.style.bottom = '0px';
+      container.style.left = '0px';
+      container.style.width = '240px';
+      container.style.height = '140px';
+      container.style.opacity = '0.01';
       container.style.pointerEvents = 'none';
-      container.style.zIndex = '-9999';
+      container.style.zIndex = '-1';
       container.style.overflow = 'hidden';
-      container.style.visibility = 'hidden';
+      container.style.visibility = 'visible';
+      container.style.transform = 'scale(0.01)';
+      container.style.transformOrigin = 'bottom left';
       document.body.appendChild(container);
 
       const placeholder = document.createElement('div');
@@ -123,7 +125,7 @@ class YouTubeEngine {
         width: '100%',
         videoId: initialVideoId,
         playerVars: {
-          autoplay: 1,
+          autoplay: this.queuedVideoId ? 1 : 0,
           controls: 0,             // Zero native YouTube controls
           disablekb: 1,            // Disable native keyboard captures
           fs: 0,                   // Disable native fullscreen button
@@ -277,17 +279,23 @@ class YouTubeEngine {
     if (!container) return;
 
     if (!this.isVideoVisible || !this.anchorElement) {
-      // Audio-only mode: keep off-screen
+      // Audio-only background mode:
+      // Keep inside viewport so browser never throttles, mutes, or freezes it!
+      // Positioned behind app root (z-index: -1), small scale, opacity 0.01, NO visibility: hidden!
       container.style.position = 'fixed';
-      container.style.top = '-9999px';
-      container.style.left = '-9999px';
-      container.style.width = '320px';
-      container.style.height = '180px';
-      container.style.opacity = '0.001';
+      container.style.bottom = '0px';
+      container.style.left = '0px';
+      container.style.top = 'auto';
+      container.style.right = 'auto';
+      container.style.width = '240px';
+      container.style.height = '140px';
+      container.style.opacity = '0.01';
       container.style.pointerEvents = 'none';
-      container.style.zIndex = '-9999';
+      container.style.zIndex = '-1';
       container.style.overflow = 'hidden';
-      container.style.visibility = 'hidden';
+      container.style.visibility = 'visible';
+      container.style.transform = 'scale(0.01)';
+      container.style.transformOrigin = 'bottom left';
       return;
     }
 
@@ -304,6 +312,8 @@ class YouTubeEngine {
     container.style.position = 'fixed';
     container.style.top = `${rect.top}px`;
     container.style.left = `${rect.left}px`;
+    container.style.bottom = 'auto';
+    container.style.right = 'auto';
     container.style.width = `${width}px`;
     container.style.height = `${height}px`;
     container.style.borderRadius = computed.borderRadius || '16px';
@@ -312,6 +322,7 @@ class YouTubeEngine {
     container.style.opacity = '1';
     container.style.pointerEvents = 'none'; // Critical: all touches/clicks pass to REXT custom overlays
     container.style.visibility = 'visible';
+    container.style.transform = 'none';
     container.style.transition = 'none';
 
     const iframe = container.querySelector('iframe');

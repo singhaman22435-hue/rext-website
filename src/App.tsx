@@ -488,9 +488,9 @@ export const App: React.FC = () => {
       StorageService.setLastPlayback(currentTrack.id, currentTime);
     } else {
       if (isYt) {
-        if (!youtubeEngine.getCurrentVideoId()) {
-          const ytId =
-            currentTrack.youtubeId || (currentTrack.audioUrl.match(/(?:youtu\.be\/|v=)([\w-]{11})/) || [])[1];
+        const ytId =
+          currentTrack.youtubeId || (currentTrack.audioUrl.match(/(?:youtu\.be\/|v=)([\w-]{11})/) || [])[1];
+        if (!youtubeEngine.getCurrentVideoId() || (ytId && ytId !== youtubeEngine.getCurrentVideoId())) {
           if (ytId) {
             youtubeEngine.loadAndPlay(ytId, currentTime);
           }
