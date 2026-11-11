@@ -15,7 +15,8 @@ import {
   Heart,
   Activity,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 interface FullscreenPlayerProps {
@@ -136,15 +137,21 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
 
       {/* Top Header */}
       <div className="relative z-10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[var(--accent-orange)] to-[var(--accent-blue)] flex items-center justify-center font-black text-white text-xs shadow-sm">
-            R
-          </div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={onClose}
+            className="p-2 sm:p-2.5 rounded-2xl bg-black/5 dark:bg-white/5 hover:bg-black/10 text-[var(--text-main)] transition-colors flex items-center gap-1"
+            title="Back (ESC)"
+            aria-label="Back"
+          >
+            <ChevronDown className="w-5 h-5 text-[var(--accent-orange)]" />
+            <span className="text-xs font-bold hidden sm:inline">Back</span>
+          </button>
           <div>
             <h4 className="text-[10px] uppercase font-bold tracking-widest text-[var(--text-muted)]">
               Theater Mode
             </h4>
-            <p className="text-xs sm:text-sm font-semibold text-[var(--text-main)] truncate max-w-[200px] sm:max-w-xs">
+            <p className="text-xs sm:text-sm font-semibold text-[var(--text-main)] truncate max-w-[160px] sm:max-w-xs">
               {track.album || track.title}
             </p>
           </div>

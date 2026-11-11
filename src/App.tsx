@@ -73,7 +73,9 @@ import {
   Sliders,
   Disc,
   ListMusic,
-  TrendingUp
+  TrendingUp,
+  ArrowLeft,
+  ChevronDown
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -225,6 +227,155 @@ export const App: React.FC = () => {
       }
     }, 100);
   };
+
+  // --- Stack Navigation & Popstate History (Mobile Back Button Support) ---
+  const pushNavState = useCallback((type: string, detail?: any) => {
+    try {
+      window.history.pushState({ rextState: true, type, detail, timestamp: Date.now() }, '');
+    } catch {}
+  }, []);
+
+  const handleNavigateView = useCallback((view: ViewType) => {
+    if (currentView === view && !selectedPlaylist) return;
+    pushNavState('view', { view });
+    setCurrentView(view);
+    setSelectedPlaylist(null);
+    setSearchQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentView, selectedPlaylist, pushNavState]);
+
+  const handleSelectPlaylist = useCallback((pl: Playlist) => {
+    pushNavState('playlist', { playlistId: pl.id });
+    setSelectedPlaylist(pl);
+    setCurrentView('home');
+    setSearchQuery('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [pushNavState]);
+
+  const handleGoBack = useCallback(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      if (selectedPlaylist) {
+        setSelectedPlaylist(null);
+      } else if (currentView !== 'home') {
+        setCurrentView('home');
+      } else if (searchQuery) {
+        setSearchQuery('');
+      }
+    }
+  }, [selectedPlaylist, currentView, searchQuery]);
+
+  const openModal = useCallback((setter: React.Dispatch<React.SetStateAction<boolean>>, name: string) => {
+    pushNavState('modal', { name });
+    setter(true);
+  }, [pushNavState]);
+
+  // Handle Browser / Mobile Hardware Back Button (Popstate)
+  useEffect(() => {
+    if (!window.history.state?.rextState) {
+      window.history.replaceState({ rextState: true, type: 'root' }, '');
+    }
+
+    const handlePopState = () => {
+      // 1. Dismiss overlays in priority order
+      if (actionMenuTrack) {
+        setActionMenuTrack(null);
+        return;
+      }
+      if (isFullscreenOpen) {
+        setIsFullscreenOpen(false);
+        return;
+      }
+      if (isLyricsOpen) {
+        setIsLyricsOpen(false);
+        return;
+      }
+      if (isBassLabOpen) {
+        setIsBassLabOpen(false);
+        return;
+      }
+      if (isQueueOpen) {
+        setIsQueueOpen(false);
+        return;
+      }
+      if (isDownloadsOpen) {
+        setIsDownloadsOpen(false);
+        return;
+      }
+      if (isMobileDrawerOpen) {
+        setIsMobileDrawerOpen(false);
+        return;
+      }
+      if (isCreatePlaylistOpen) {
+        setIsCreatePlaylistOpen(false);
+        return;
+      }
+      if (isAddToPlaylistOpen) {
+        setIsAddToPlaylistOpen(false);
+        return;
+      }
+      if (isSleepTimerOpen) {
+        setIsSleepTimerOpen(false);
+        return;
+      }
+      if (isProModalOpen) {
+        setIsProModalOpen(false);
+        return;
+      }
+      if (isInstallModalOpen) {
+        setIsInstallModalOpen(false);
+        return;
+      }
+      if (isShortcutsOpen) {
+        setIsShortcutsOpen(false);
+        return;
+      }
+      if (isImportOpen) {
+        setIsImportOpen(false);
+        return;
+      }
+
+      // 2. Playlist drilldown back
+      if (selectedPlaylist) {
+        setSelectedPlaylist(null);
+        return;
+      }
+
+      // 3. Search query clear
+      if (searchQuery.trim().length > 0) {
+        setSearchQuery('');
+        return;
+      }
+
+      // 4. Secondary view return to Home
+      if (currentView !== 'home') {
+        setCurrentView('home');
+        return;
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [
+    actionMenuTrack,
+    isFullscreenOpen,
+    isLyricsOpen,
+    isBassLabOpen,
+    isQueueOpen,
+    isDownloadsOpen,
+    isMobileDrawerOpen,
+    isCreatePlaylistOpen,
+    isAddToPlaylistOpen,
+    isSleepTimerOpen,
+    isProModalOpen,
+    isInstallModalOpen,
+    isShortcutsOpen,
+    isImportOpen,
+    selectedPlaylist,
+    searchQuery,
+    currentView
+  ]);
 
   // Apply Theme & Font dynamically
   useEffect(() => {
@@ -814,27 +965,19 @@ export const App: React.FC = () => {
         {/* Left Sidebar (Desktop) */}
         <Sidebar
           currentView={currentView}
-          onNavigate={(view) => {
-            setCurrentView(view);
-            setSelectedPlaylist(null);
-            setSearchQuery('');
-          }}
+          onNavigate={handleNavigateView}
           playlists={FEATURED_PLAYLISTS}
           userPlaylists={userPlaylists}
           selectedPlaylistId={selectedPlaylist?.id || null}
-          onSelectPlaylist={(pl) => {
-            setSelectedPlaylist(pl);
-            setCurrentView('home');
-            setSearchQuery('');
-          }}
-          onOpenCreatePlaylist={() => setIsCreatePlaylistOpen(true)}
+          onSelectPlaylist={handleSelectPlaylist}
+          onOpenCreatePlaylist={() => openModal(setIsCreatePlaylistOpen, 'create-playlist')}
           bassBoost={bassBoost}
           likedCount={likedIds.length}
           downloadCount={downloads.length}
           totalTracksCount={tracks.length}
           isPro={isProUser}
-          onOpenProModal={() => setIsProModalOpen(true)}
-          onOpenInstallModal={() => setIsInstallModalOpen(true)}
+          onOpenProModal={() => openModal(setIsProModalOpen, 'pro')}
+          onOpenInstallModal={() => openModal(setIsInstallModalOpen, 'install')}
         />
 
         {/* Center Main Stage */}
@@ -845,18 +988,18 @@ export const App: React.FC = () => {
             selectedGenre={selectedGenre}
             onSelectGenre={setSelectedGenre}
             bassBoost={bassBoost}
-            onOpenBassLab={() => setIsBassLabOpen(true)}
+            onOpenBassLab={() => openModal(setIsBassLabOpen, 'bass-lab')}
             downloadCount={downloads.length}
-            onOpenDownloads={() => setIsDownloadsOpen(true)}
-            onOpenShortcuts={() => setIsShortcutsOpen(true)}
+            onOpenDownloads={() => openModal(setIsDownloadsOpen, 'downloads')}
+            onOpenShortcuts={() => openModal(setIsShortcutsOpen, 'shortcuts')}
             isSearchingOnline={isSearchingOnline}
             currentTheme={currentTheme}
             onThemeChange={handleThemeChange}
             currentFont={currentFont}
             onFontChange={handleFontChange}
             isPro={isProUser}
-            onOpenProModal={() => setIsProModalOpen(true)}
-            onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
+            onOpenProModal={() => openModal(setIsProModalOpen, 'pro')}
+            onOpenMobileDrawer={() => openModal(setIsMobileDrawerOpen, 'drawer')}
             searchHistory={searchHistory}
             onSelectSearchHistory={(term) => {
               setSearchQuery(term);
@@ -873,75 +1016,115 @@ export const App: React.FC = () => {
           <div className="flex-1 p-4 md:p-8 space-y-8 overflow-y-auto max-w-7xl w-full mx-auto">
             {/* Hero / Playlist Header Banner */}
             {selectedPlaylist ? (
-              <div className="relative p-6 md:p-8 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden shadow-lg flex flex-col sm:flex-row items-center gap-6 animate-fade-in">
-                <img
-                  src={selectedPlaylist.coverUrl}
-                  alt={selectedPlaylist.name}
-                  className="w-36 h-36 rounded-2xl object-cover shadow-xl border border-[var(--border-color)]"
-                />
-                <div className="space-y-2 text-center sm:text-left flex-1">
-                  <span className="text-xs uppercase font-mono tracking-widest text-[var(--accent-orange)] font-bold">
-                    Playlist
-                  </span>
-                  <h2 className="text-2xl sm:text-4xl font-black text-[var(--text-main)]">
-                    {selectedPlaylist.name}
-                  </h2>
-                  <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-xl">
-                    {selectedPlaylist.description}
-                  </p>
-                  <div className="flex items-center justify-center sm:justify-start gap-3 pt-2">
-                    <button
-                      onClick={() => displayedTracks[0] && handlePlayTrack(displayedTracks[0])}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--accent-orange)] text-white text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition-all"
-                    >
-                      <Play className="w-4 h-4 fill-current" /> Play All
-                    </button>
-                    <span className="text-xs font-mono text-[var(--text-muted)]">
-                      {displayedTracks.length} Songs
+              <div className="space-y-4">
+                <button
+                  onClick={handleGoBack}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-surface-hover)] text-xs font-bold text-[var(--text-main)] shadow-xs transition-colors"
+                  aria-label="Back to Previous View"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[var(--accent-orange)]" />
+                  <span>Back to Home</span>
+                </button>
+                <div className="relative p-4 sm:p-6 md:p-8 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden shadow-lg flex flex-col sm:flex-row items-center gap-4 sm:gap-6 animate-fade-in">
+                  <img
+                    src={selectedPlaylist.coverUrl}
+                    alt={selectedPlaylist.name}
+                    className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover shadow-xl border border-[var(--border-color)] shrink-0"
+                  />
+                  <div className="space-y-2 text-center sm:text-left flex-1 min-w-0">
+                    <span className="text-xs uppercase font-mono tracking-widest text-[var(--accent-orange)] font-bold">
+                      Playlist
                     </span>
+                    <h2 className="text-xl sm:text-3xl md:text-4xl font-black text-[var(--text-main)] truncate">
+                      {selectedPlaylist.name}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-xl">
+                      {selectedPlaylist.description}
+                    </p>
+                    <div className="flex items-center justify-center sm:justify-start gap-3 pt-2">
+                      <button
+                        onClick={() => displayedTracks[0] && handlePlayTrack(displayedTracks[0])}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--accent-orange)] text-white text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition-all"
+                      >
+                        <Play className="w-4 h-4 fill-current" /> Play All
+                      </button>
+                      <span className="text-xs font-mono text-[var(--text-muted)]">
+                        {displayedTracks.length} Songs
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             ) : currentView === 'liked' ? (
-              <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[var(--accent-orange)]/15 to-pink-500/15 border border-[var(--accent-orange)]/30 flex items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-[var(--accent-orange)] text-white flex items-center justify-center shadow-lg">
-                  <Heart className="w-10 h-10 fill-current" />
-                </div>
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-main)]">
-                    Liked Songs
-                  </h2>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {likedIds.length} tracks you have marked as your favorites
-                  </p>
+              <div className="space-y-4">
+                <button
+                  onClick={handleGoBack}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-surface-hover)] text-xs font-bold text-[var(--text-main)] shadow-xs transition-colors"
+                  aria-label="Back to Home"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[var(--accent-orange)]" />
+                  <span>Back to Home</span>
+                </button>
+                <div className="p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[var(--accent-orange)]/15 to-pink-500/15 border border-[var(--accent-orange)]/30 flex items-center gap-4 sm:gap-6">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[var(--accent-orange)] text-white flex items-center justify-center shadow-lg shrink-0">
+                    <Heart className="w-7 h-7 sm:w-10 sm:h-10 fill-current" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[var(--text-main)]">
+                      Liked Songs
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {likedIds.length} tracks you have marked as your favorites
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : currentView === 'downloads' ? (
-              <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[var(--accent-blue)]/15 to-cyan-500/15 border border-[var(--accent-blue)]/30 flex items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-[var(--accent-blue)] text-white flex items-center justify-center shadow-lg">
-                  <HardDrive className="w-10 h-10" />
-                </div>
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-main)]">
-                    Offline Downloads Vault
-                  </h2>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {downloads.length} tracks saved securely in IndexedDB
-                  </p>
+              <div className="space-y-4">
+                <button
+                  onClick={handleGoBack}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-surface-hover)] text-xs font-bold text-[var(--text-main)] shadow-xs transition-colors"
+                  aria-label="Back to Home"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[var(--accent-orange)]" />
+                  <span>Back to Home</span>
+                </button>
+                <div className="p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[var(--accent-blue)]/15 to-cyan-500/15 border border-[var(--accent-blue)]/30 flex items-center gap-4 sm:gap-6">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-[var(--accent-blue)] text-white flex items-center justify-center shadow-lg shrink-0">
+                    <HardDrive className="w-7 h-7 sm:w-10 sm:h-10" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[var(--text-main)]">
+                      Offline Downloads Vault
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {downloads.length} tracks saved securely in IndexedDB
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : currentView === 'youtube' ? (
-              <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[var(--accent-orange)]/15 to-pink-500/15 border border-[var(--accent-orange)]/30 flex items-center gap-6">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[var(--accent-orange)] to-pink-500 text-white flex items-center justify-center shadow-lg">
-                  <TrendingUp className="w-10 h-10" />
-                </div>
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-black text-[var(--text-main)]">
-                    Trending Global Charts
-                  </h2>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    Top trending music worldwide in 320 kbps studio audio with live synced lyrics
-                  </p>
+              <div className="space-y-4">
+                <button
+                  onClick={handleGoBack}
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:bg-[var(--bg-surface-hover)] text-xs font-bold text-[var(--text-main)] shadow-xs transition-colors"
+                  aria-label="Back to Home"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[var(--accent-orange)]" />
+                  <span>Back to Home</span>
+                </button>
+                <div className="p-4 sm:p-6 md:p-8 rounded-3xl bg-gradient-to-r from-[var(--accent-orange)]/15 to-pink-500/15 border border-[var(--accent-orange)]/30 flex items-center gap-4 sm:gap-6">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[var(--accent-orange)] to-pink-500 text-white flex items-center justify-center shadow-lg shrink-0">
+                    <TrendingUp className="w-7 h-7 sm:w-10 sm:h-10" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-[var(--text-main)]">
+                      Trending Global Charts
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)]">
+                      Top trending music worldwide in 320 kbps studio audio with live synced lyrics
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -965,7 +1148,7 @@ export const App: React.FC = () => {
                       <Play className="w-4 h-4 fill-current" /> Listen Now
                     </button>
                     <button
-                      onClick={() => setIsQueueOpen(true)}
+                      onClick={() => openModal(setIsQueueOpen, 'queue')}
                       className="flex items-center gap-1.5 px-4 py-3 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 text-xs font-bold text-[var(--text-main)] transition-all"
                     >
                       <ListMusic className="w-4 h-4 text-[var(--accent-blue)]" /> Up Next (
@@ -994,7 +1177,7 @@ export const App: React.FC = () => {
                     <Disc className="w-4 h-4 text-[var(--accent-orange)]" /> Featured Collections
                   </h3>
                   <button
-                    onClick={() => setIsCreatePlaylistOpen(true)}
+                    onClick={() => openModal(setIsCreatePlaylistOpen, 'create-playlist')}
                     className="text-xs font-bold text-[var(--accent-orange)] hover:underline flex items-center gap-1"
                   >
                     <Plus className="w-3.5 h-3.5" /> New Playlist
@@ -1005,7 +1188,7 @@ export const App: React.FC = () => {
                     <PlaylistCard
                       key={pl.id}
                       playlist={pl}
-                      onSelect={() => setSelectedPlaylist(pl)}
+                      onSelect={() => handleSelectPlaylist(pl)}
                       onPlayDirect={() => {
                         const target = tracks.find((t) => pl.trackIds.includes(t.id));
                         if (target) handlePlayTrack(target);
@@ -1029,7 +1212,7 @@ export const App: React.FC = () => {
                       : currentView === 'downloads'
                       ? 'Downloaded Tracks'
                       : currentView === 'youtube'
-                      ? 'YouTube Video Streams'
+                      ? 'Trending Global Hits'
                       : searchQuery
                       ? `Search: "${searchQuery}"`
                       : 'Popular Hits & Master Recordings'}
@@ -1207,14 +1390,14 @@ export const App: React.FC = () => {
         isDownloading={currentTrack ? Boolean(downloadingIds[currentTrack.id]) : false}
         downloadProgress={currentTrack ? downloadingIds[currentTrack.id] || 0 : 0}
         onDownload={() => currentTrack && handleDownloadTrack(currentTrack)}
-        onOpenBassLab={() => setIsBassLabOpen(true)}
-        onOpenLyrics={() => setIsLyricsOpen(true)}
-        onOpenFullscreen={() => setIsFullscreenOpen(true)}
+        onOpenBassLab={() => openModal(setIsBassLabOpen, 'bass-lab')}
+        onOpenLyrics={() => openModal(setIsLyricsOpen, 'lyrics')}
+        onOpenFullscreen={() => openModal(setIsFullscreenOpen, 'fullscreen')}
         isVideoVisible={isVideoVisible}
         onToggleVideo={handleToggleVideo}
-        onOpenQueue={() => setIsQueueOpen(true)}
+        onOpenQueue={() => openModal(setIsQueueOpen, 'queue')}
         queueCount={playQueue.length}
-        onOpenSleepTimer={() => setIsSleepTimerOpen(true)}
+        onOpenSleepTimer={() => openModal(setIsSleepTimerOpen, 'sleep')}
         sleepTimerEnd={sleepTimerEnd}
         playbackSpeed={playbackSpeed}
       />
@@ -1246,7 +1429,7 @@ export const App: React.FC = () => {
         track={playlistTargetTrack}
         userPlaylists={userPlaylists}
         onToggleTrackInPlaylist={handleToggleTrackInPlaylist}
-        onOpenCreatePlaylist={() => setIsCreatePlaylistOpen(true)}
+        onOpenCreatePlaylist={() => openModal(setIsCreatePlaylistOpen, 'create-playlist')}
       />
 
       <SleepTimerModal
@@ -1338,16 +1521,11 @@ export const App: React.FC = () => {
       {/* Mobile Bottom Navigation Bar (< md screens) */}
       <MobileNav
         currentView={currentView}
-        onNavigate={(view) => {
-          setCurrentView(view);
-          setSelectedPlaylist(null);
-          setSearchQuery('');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onNavigate={handleNavigateView}
         likedCount={likedIds.length}
         downloadCount={downloads.length}
-        onOpenBassLab={() => setIsBassLabOpen(true)}
-        onOpenLibraryDrawer={() => setIsMobileDrawerOpen(true)}
+        onOpenBassLab={() => openModal(setIsBassLabOpen, 'bass-lab')}
+        onOpenLibraryDrawer={() => openModal(setIsMobileDrawerOpen, 'drawer')}
         onFocusSearch={handleFocusSearch}
       />
 
@@ -1359,19 +1537,17 @@ export const App: React.FC = () => {
         userPlaylists={userPlaylists}
         selectedPlaylistId={selectedPlaylist?.id || null}
         onSelectPlaylist={(pl) => {
-          setSelectedPlaylist(pl);
-          setCurrentView('home');
-          setSearchQuery('');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          handleSelectPlaylist(pl);
+          setIsMobileDrawerOpen(false);
         }}
-        onOpenCreatePlaylist={() => setIsCreatePlaylistOpen(true)}
+        onOpenCreatePlaylist={() => openModal(setIsCreatePlaylistOpen, 'create-playlist')}
         currentTheme={currentTheme}
         onThemeChange={handleThemeChange}
         currentFont={currentFont}
         onFontChange={handleFontChange}
-        onOpenImport={() => setIsImportOpen(true)}
+        onOpenImport={() => openModal(setIsImportOpen, 'import')}
         isPro={isProUser}
-        onOpenProModal={() => setIsProModalOpen(true)}
+        onOpenProModal={() => openModal(setIsProModalOpen, 'pro')}
       />
     </div>
   );

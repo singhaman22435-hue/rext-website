@@ -155,8 +155,8 @@ export const TrackRow: React.FC<TrackRowProps> = ({
           )}
         </button>
 
-        {/* Track Duration */}
-        <span className="text-xs font-mono text-[var(--text-sub)] w-10 text-right">
+        {/* Track Duration (Desktop/Tablet) */}
+        <span className="text-xs font-mono text-[var(--text-sub)] w-10 text-right hidden sm:block">
           {formatDuration(track.duration)}
         </span>
 

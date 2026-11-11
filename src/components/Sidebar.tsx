@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenInstallModal,
 }) => {
   return (
-    <aside className="w-60 bg-[var(--bg-sidebar)] border-r border-[var(--border-color)] flex flex-col justify-between p-4 shrink-0 select-none transition-colors duration-300">
+    <aside className="hidden md:flex w-60 bg-[var(--bg-sidebar)] border-r border-[var(--border-color)] flex-col justify-between p-4 shrink-0 select-none transition-colors duration-300">
       {/* Top Branding & Nav */}
       <div className="space-y-6">
         {/* Brand */}

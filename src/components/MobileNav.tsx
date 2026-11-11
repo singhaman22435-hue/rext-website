@@ -54,15 +54,15 @@ export const MobileNav: React.FC<MobileNavProps> = ({
 
         {/* Liked */}
         <button
-          onClick={() => onNavigate('favorites')}
+          onClick={() => onNavigate('liked')}
           className={`relative flex flex-col items-center justify-center min-w-[48px] min-h-[48px] py-1 px-2 rounded-xl transition-colors ${
-            currentView === 'favorites'
+            currentView === 'liked' || currentView === 'favorites'
               ? 'text-[var(--accent-orange)] font-bold'
               : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
           }`}
           aria-label="Liked Songs"
         >
-          <Heart className={`w-5 h-5 ${currentView === 'favorites' ? 'fill-current stroke-[2.5]' : 'stroke-2'}`} />
+          <Heart className={`w-5 h-5 ${currentView === 'liked' || currentView === 'favorites' ? 'fill-current stroke-[2.5]' : 'stroke-2'}`} />
           <span className="text-[10px] mt-0.5 tracking-tight">Liked</span>
           {likedCount > 0 && (
             <span className="absolute top-1 right-2 w-4 h-4 rounded-full bg-[var(--accent-orange)] text-white text-[9px] font-bold flex items-center justify-center">
