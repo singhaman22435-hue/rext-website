@@ -1,7 +1,6 @@
 import React from 'react';
 import { Track } from '../types';
 import { Play, Pause, Heart, Download, Check, MoreVertical } from 'lucide-react';
-import { YoutubeIcon } from './YoutubeIcon';
 
 interface TrackRowProps {
   index: number;
@@ -93,20 +92,13 @@ export const TrackRow: React.FC<TrackRowProps> = ({
 
         {/* Title & Artist */}
         <div className="min-w-0 flex-1 pr-2">
-          <div className="flex items-center gap-1.5 truncate">
-            <h4
-              className={`font-semibold text-sm truncate ${
-                isCurrent ? 'text-[var(--accent-orange)] font-bold' : 'text-[var(--text-main)] group-hover:text-[var(--accent-orange)]'
-              }`}
-            >
-              {track.title}
-            </h4>
-            {Boolean(track.youtubeId || track.source === 'youtube') && (
-              <span className="shrink-0 px-1.5 py-0.5 rounded bg-red-600/15 text-red-600 text-[10px] font-bold tracking-wider flex items-center gap-1 font-mono">
-                <YoutubeIcon className="w-2.5 h-2.5 text-red-600" /> YT
-              </span>
-            )}
-          </div>
+          <h4
+            className={`font-semibold text-sm truncate ${
+              isCurrent ? 'text-[var(--accent-orange)] font-bold' : 'text-[var(--text-main)] group-hover:text-[var(--accent-orange)]'
+            }`}
+          >
+            {track.title}
+          </h4>
           <p className="text-xs text-[var(--text-muted)] truncate">{track.artist}</p>
         </div>
       </div>

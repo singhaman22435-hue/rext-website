@@ -19,7 +19,7 @@ class YouTubeEngine {
   private queuedVideoId: string | null = null;
   private pollTimer: number | null = null;
   private currentVolume: number = 85;
-  private isVideoVisible: boolean = true;
+  private isVideoVisible: boolean = false;
 
   public onTimeUpdate?: (currentTime: number, duration: number) => void;
   public onPlayStateChange?: (isPlaying: boolean) => void;
@@ -61,39 +61,17 @@ class YouTubeEngine {
   }
 
   private applyContainerStyles(container: HTMLElement) {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    // Pure Audio Mode: Keep YouTube player completely offscreen and invisible
+    // so it never renders a video box on top of the UI
     container.style.position = 'fixed';
-    if (isMobile) {
-      container.style.bottom = '130px';
-      container.style.right = '12px';
-      container.style.width = '180px';
-      container.style.height = '101px';
-    } else {
-      container.style.bottom = '96px';
-      container.style.right = '24px';
-      container.style.width = '320px';
-      container.style.height = '180px';
-    }
-    container.style.borderRadius = '16px';
+    container.style.bottom = '-9999px';
+    container.style.right = '-9999px';
+    container.style.width = '200px';
+    container.style.height = '200px';
+    container.style.opacity = '0.001';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '-9999';
     container.style.overflow = 'hidden';
-    container.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)';
-    container.style.border = '1px solid var(--border-color)';
-    container.style.background = '#000';
-    container.style.transition = 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
-
-    if (this.isVideoVisible) {
-      container.style.transform = 'translateY(0) scale(1)';
-      container.style.opacity = '1';
-      container.style.pointerEvents = 'auto';
-      container.style.zIndex = '45';
-    } else {
-      // Audio-only mode: preserve standard dimensions so YouTube player keeps streaming audio,
-      // and translate it below viewport edge
-      container.style.transform = 'translateY(400px) scale(0.95)';
-      container.style.opacity = '0.01';
-      container.style.pointerEvents = 'none';
-      container.style.zIndex = '-10';
-    }
   }
 
   private createPlayer() {

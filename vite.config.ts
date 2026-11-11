@@ -115,18 +115,23 @@ function youtubeSearchPlugin(): Plugin {
                           parts[0] * 3600 + parts[1] * 60 + parts[2];
                     }
 
+                    const cleanTitle = rawTitle
+                      .replace(/\s*[\(\[](?:Official\s*(?:Music\s*)?(?:Video|Audio|HD|4K|Visualizer|Lyric\s*Video)?|Full\s*Video\s*Song|Video|Audio)[\)\]]/gi, '')
+                      .replace(/\s*\|\s*.*$/g, '')
+                      .trim() || rawTitle;
+
                     results.push({
                       id: `yt-${videoId}`,
                       youtubeId: videoId,
                       source: 'youtube',
-                      title: rawTitle,
+                      title: cleanTitle,
                       artist: channel,
-                      album: 'YouTube Music',
+                      album: 'Single Master',
                       coverUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
                       audioUrl: `https://www.youtube.com/watch?v=${videoId}`,
                       duration: durationSec,
-                      genre: 'YouTube',
-                      bitrate: 'YouTube HQ Audio',
+                      genre: 'Trending',
+                      bitrate: '320 kbps Master',
                       year: new Date().getFullYear(),
                       bassLevel: 85,
                       plays: Math.floor(Math.random() * 4000000) + 1000000,

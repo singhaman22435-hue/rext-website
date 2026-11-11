@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { DownloadItem, Track } from '../types';
 import { StorageService } from '../services/storageService';
+import { DownloadService } from '../services/downloadService';
 import {
   Download,
   Trash2,
@@ -43,25 +44,7 @@ export const DownloadManagerModal: React.FC<DownloadManagerModalProps> = ({
   if (!isOpen) return null;
 
   const handleExportFile = async (item: DownloadItem) => {
-    const blob = await StorageService.getOfflineAudioBlob(item.trackId);
-    if (blob) {
-      StorageService.triggerBrowserDownload(
-        blob,
-        `${item.track.artist} - ${item.track.title}.mp3`
-      );
-    } else {
-      try {
-        const resp = await fetch(item.track.audioUrl);
-        const newBlob = await resp.blob();
-        await StorageService.saveOfflineAudioBlob(item.trackId, newBlob);
-        StorageService.triggerBrowserDownload(
-          newBlob,
-          `${item.track.artist} - ${item.track.title}.mp3`
-        );
-      } catch (e) {
-        alert('Could not export audio file directly due to network CORS.');
-      }
-    }
+    await DownloadService.downloadTrackToDevice(item.track);
   };
 
   return (

@@ -17,12 +17,9 @@ import {
   Mic2,
   Sliders,
   Flame,
-  Video,
-  VideoOff,
   ListMusic,
   Moon
 } from 'lucide-react';
-import { YoutubeIcon } from './YoutubeIcon';
 
 interface PlayerBarProps {
   currentTrack: Track | null;
@@ -156,16 +153,9 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
             </div>
 
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 truncate">
-                <h4 className="font-bold text-xs text-[var(--text-main)] truncate">
-                  {currentTrack.title}
-                </h4>
-                {Boolean(currentTrack.youtubeId || currentTrack.source === 'youtube') && (
-                  <span className="shrink-0 px-1 py-0.2 rounded bg-red-600/15 text-red-600 text-[8px] font-bold font-mono">
-                    YT
-                  </span>
-                )}
-              </div>
+              <h4 className="font-bold text-xs text-[var(--text-main)] truncate">
+                {currentTrack.title}
+              </h4>
               <p className="text-[11px] text-[var(--text-muted)] truncate">
                 {currentTrack.artist}
               </p>
@@ -299,19 +289,12 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
             </div>
 
             <div className="min-w-0">
-              <div className="flex items-center gap-1.5 truncate">
-                <h4
-                  onClick={onOpenFullscreen}
-                  className="font-bold text-sm text-[var(--text-main)] truncate cursor-pointer hover:text-[var(--accent-orange)] transition-colors"
-                >
-                  {currentTrack.title}
-                </h4>
-                {Boolean(currentTrack.youtubeId || currentTrack.source === 'youtube') && (
-                  <span className="shrink-0 px-1.5 py-0.5 rounded bg-red-600/15 text-red-600 text-[10px] font-bold tracking-wider flex items-center gap-1 font-mono">
-                    <YoutubeIcon className="w-3 h-3 text-red-600" /> YT
-                  </span>
-                )}
-              </div>
+              <h4
+                onClick={onOpenFullscreen}
+                className="font-bold text-sm text-[var(--text-main)] truncate cursor-pointer hover:text-[var(--accent-orange)] transition-colors"
+              >
+                {currentTrack.title}
+              </h4>
               <p className="text-xs text-[var(--text-muted)] truncate">{currentTrack.artist}</p>
             </div>
 
@@ -465,22 +448,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 </div>
               )}
             </div>
-
-            {/* Watch Video Button */}
-            {Boolean(currentTrack.youtubeId || currentTrack.source === 'youtube') && onToggleVideo && (
-              <button
-                onClick={onToggleVideo}
-                className={`p-2 rounded-xl transition-all flex items-center gap-1.5 text-xs font-semibold ${
-                  isVideoVisible
-                    ? 'bg-red-600 text-white shadow-sm ring-2 ring-red-500/30'
-                    : 'bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-red-500'
-                }`}
-                title={isVideoVisible ? 'Hide Video' : 'Watch Official Music Video'}
-              >
-                {isVideoVisible ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
-                <span className="hidden lg:inline text-[11px]">{isVideoVisible ? 'Hide' : 'Video'}</span>
-              </button>
-            )}
 
             {/* Equalizer Button */}
             <button

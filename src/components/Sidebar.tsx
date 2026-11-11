@@ -11,9 +11,9 @@ import {
   Crown,
   Download,
   Plus,
-  FolderPlus
+  FolderPlus,
+  TrendingUp
 } from 'lucide-react';
-import { YoutubeIcon } from './YoutubeIcon';
 
 interface SidebarProps {
   currentView: ViewType;
@@ -88,16 +88,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => onNavigate('youtube')}
             className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
               currentView === 'youtube'
-                ? 'bg-red-600 text-white shadow-sm'
+                ? 'bg-[var(--accent-orange)] text-white shadow-sm'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
             }`}
           >
             <div className="flex items-center gap-3">
-              <YoutubeIcon className={`w-4 h-4 ${currentView === 'youtube' ? 'text-white' : 'text-red-500'}`} />
-              YouTube Studio
+              <TrendingUp className={`w-4 h-4 ${currentView === 'youtube' ? 'text-white' : 'text-[var(--accent-orange)]'}`} />
+              Trending Charts
             </div>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
-              HD
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+              currentView === 'youtube' ? 'bg-white/20 text-white' : 'bg-[var(--accent-orange)]/15 text-[var(--accent-orange)]'
+            }`}>
+              HOT
             </span>
           </button>
         </nav>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Track } from '../types';
 import { Play, Pause, Heart, Download, Check, MoreVertical } from 'lucide-react';
-import { YoutubeIcon } from './YoutubeIcon';
 
 interface TrackCardProps {
   track: Track;
@@ -74,16 +73,11 @@ export const TrackCard: React.FC<TrackCardProps> = ({
           )}
         </div>
 
-        {/* Bitrate / Source Pill */}
+        {/* Quality Pill */}
         <div className="absolute top-2 left-2 flex items-center gap-1">
           <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-mono text-white border border-white/10">
             {track.bitrate}
           </span>
-          {Boolean(track.youtubeId || track.source === 'youtube') && (
-            <div className="px-1.5 py-0.5 rounded-md bg-red-600 text-[9px] font-bold text-white flex items-center gap-0.5 shadow-sm">
-              <YoutubeIcon className="w-2.5 h-2.5" /> YT
-            </div>
-          )}
         </div>
       </div>
 

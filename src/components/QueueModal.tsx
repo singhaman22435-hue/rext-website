@@ -223,3 +223,4 @@ export const QueueModal: React.FC<QueueModalProps> = ({
     </div>
   );
 };
+

@@ -68,3 +68,4 @@ export const OfflineBanner: React.FC<OfflineBannerProps> = ({ onOpenDownloads })
 
   return null;
 };
+
