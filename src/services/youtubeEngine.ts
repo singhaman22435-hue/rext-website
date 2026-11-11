@@ -49,7 +49,7 @@ class YouTubeEngine {
   }
 
   /**
-   * Guarantees the existence of the background YouTube container
+   * Guarantees the existence of the background YouTube container and player placeholder
    */
   private ensureContainer(): HTMLElement {
     let container = document.getElementById('rext-youtube-container');
@@ -68,6 +68,10 @@ class YouTubeEngine {
       container.style.visibility = 'hidden';
       document.body.appendChild(container);
 
+      const placeholder = document.createElement('div');
+      placeholder.id = 'rext-yt-player-element';
+      container.appendChild(placeholder);
+    } else if (!document.getElementById('rext-yt-player-element') && !container.querySelector('iframe')) {
       const placeholder = document.createElement('div');
       placeholder.id = 'rext-yt-player-element';
       container.appendChild(placeholder);
@@ -110,11 +114,14 @@ class YouTubeEngine {
 
     if (!window.YT || !window.YT.Player) return;
 
+    // Use current video or default initial video
+    const initialVideoId = this.currentVideoId || this.queuedVideoId || '34Na4j8AVgA';
+
     try {
       this.player = new window.YT.Player('rext-yt-player-element', {
         height: '100%',
         width: '100%',
-        videoId: this.currentVideoId || undefined,
+        videoId: initialVideoId,
         playerVars: {
           autoplay: 1,
           controls: 0,             // Zero native YouTube controls
@@ -125,7 +132,9 @@ class YouTubeEngine {
           playsinline: 1,          // Seamless mobile inline play
           enablejsapi: 1,
           iv_load_policy: 3,       // Disables interactive cards/annotations
-          autohide: 1
+          autohide: 1,
+          origin: typeof window !== 'undefined' ? window.location.origin : undefined,
+          widget_referrer: typeof window !== 'undefined' ? window.location.origin : undefined
         },
         events: {
           onReady: () => {
@@ -356,7 +365,7 @@ class YouTubeEngine {
     this.queuedVideoId = videoId;
     this.queuedStartTime = startSeconds;
 
-    const container = this.ensureContainer();
+    this.ensureContainer();
 
     // If player is ready, call loadVideoById
     if (this.isReady && this.player && typeof this.player.loadVideoById === 'function') {
@@ -383,26 +392,10 @@ class YouTubeEngine {
         this.startProgressPolling();
         this.queuedVideoId = null;
         this.updatePosition();
+        if (this.onPlayStateChange) this.onPlayStateChange(true);
         return true;
       } catch (err) {
         console.warn('YouTube loadVideo error:', err);
-      }
-    }
-
-    // Direct Iframe Fallback: if YT API hasn't initialized, embed directly so playback starts immediately
-    let iframe = container.querySelector('iframe');
-    if (!iframe) {
-      const placeholder = document.getElementById('rext-yt-player-element');
-      const startParam = Math.floor(startSeconds);
-      const embedSrc = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&playsinline=1&iv_load_policy=3&enablejsapi=1${startParam > 0 ? `&start=${startParam}` : ''}`;
-
-      if (placeholder) {
-        const directIframe = document.createElement('iframe');
-        directIframe.id = 'rext-yt-player-element';
-        directIframe.src = embedSrc;
-        directIframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-        directIframe.setAttribute('allowfullscreen', 'true');
-        placeholder.replaceWith(directIframe);
       }
     }
 
@@ -425,9 +418,14 @@ class YouTubeEngine {
   public play() {
     if (this.player && typeof this.player.playVideo === 'function') {
       try {
+        this.player.unMute();
+        this.player.setVolume(this.currentVolume);
         this.player.playVideo();
         this.startProgressPolling();
+        if (this.onPlayStateChange) this.onPlayStateChange(true);
       } catch {}
+    } else if (this.currentVideoId) {
+      this.loadAndPlay(this.currentVideoId);
     }
   }
 
@@ -436,6 +434,7 @@ class YouTubeEngine {
       try {
         this.player.pauseVideo();
         this.stopProgressPolling();
+        if (this.onPlayStateChange) this.onPlayStateChange(false);
       } catch {}
     }
   }
@@ -456,6 +455,7 @@ class YouTubeEngine {
       } catch {}
     }
     this.stopProgressPolling();
+    if (this.onPlayStateChange) this.onPlayStateChange(false);
   }
 
   private startProgressPolling() {

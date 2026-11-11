@@ -65,10 +65,33 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'video' | 'visualizer' | 'lyrics'>('video');
   const [lyricsData, setLyricsData] = useState<LyricsResult | null>(null);
+  const [lyricOffset, setLyricOffset] = useState<number>(0);
   const [seekNotice, setSeekNotice] = useState<string | null>(null);
   const activeLineRef = useRef<HTMLDivElement | null>(null);
   const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
   const videoAnchorRef = useRef<HTMLDivElement | null>(null);
+
+  // Load user manual lyric offset for this track
+  useEffect(() => {
+    if (track) {
+      setLyricOffset(LyricsService.getLyricOffset(track.id));
+    }
+  }, [track?.id]);
+
+  const handleAdjustOffset = (delta: number) => {
+    if (!track) return;
+    const next = Math.round((lyricOffset + delta) * 10) / 10;
+    setLyricOffset(next);
+    LyricsService.setLyricOffset(track.id, next);
+    triggerSeekNotice(`Sync: ${next > 0 ? `+${next}` : next}s`);
+  };
+
+  const handleResetOffset = () => {
+    if (!track) return;
+    setLyricOffset(0);
+    LyricsService.setLyricOffset(track.id, 0);
+    triggerSeekNotice('Sync: 0.0s');
+  };
 
   // Synchronize anchor element with YouTube engine when in video mode
   useEffect(() => {
@@ -144,10 +167,11 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
     }
   };
 
+  const adjustedCurrentTime = Math.max(0, currentTime + lyricOffset);
   let activeIndex = -1;
   let activeLyricText = '';
   for (let i = 0; i < lyrics.length; i++) {
-    if (currentTime >= lyrics[i].time) {
+    if (adjustedCurrentTime >= lyrics[i].time) {
       activeIndex = i;
       activeLyricText = lyrics[i].text;
     } else {
@@ -439,25 +463,73 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
                   {track.bitrate}
                 </span>
               </div>
-              <VisualizerCanvas height={85} mode="bars" showControls={true} isPlaying={isPlaying} />
+              <VisualizerCanvas
+                height={85}
+                mode="bars"
+                showControls={true}
+                isPlaying={isPlaying}
+                track={track}
+                bassBoost={bassBoost}
+                currentTime={currentTime}
+              />
             </div>
 
-            {/* Live Karaoke Highlight Box */}
-            <div
-              onClick={() => setActiveTab('lyrics')}
-              className="py-5 px-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] min-h-[120px] flex flex-col justify-center text-center space-y-1.5 shadow-inner cursor-pointer hover:border-[var(--accent-orange)]/50 transition-all group"
-            >
+            {/* Live Karaoke Highlight Box with Quick Sync Offset Adjusters */}
+            <div className="py-4 px-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] flex flex-col justify-center text-center space-y-2 shadow-inner group">
               <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-[var(--accent-orange)] px-1">
                 <span className="flex items-center gap-1">
                   <Mic2 className="w-3 h-3" /> Live Lyric Sync
                 </span>
-                <span className="text-[10px] text-[var(--text-muted)] group-hover:text-[var(--accent-orange)] flex items-center transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('lyrics')}
+                  className="text-[10px] text-[var(--text-muted)] group-hover:text-[var(--accent-orange)] flex items-center transition-colors cursor-pointer"
+                >
                   View Full <ChevronRight className="w-3 h-3 ml-0.5" />
-                </span>
+                </button>
               </div>
-              <p className="text-lg sm:text-xl font-bold text-[var(--text-main)] group-hover:scale-102 transition-transform">
-                {activeLyricText || 'Enjoy the music flow...'}
-              </p>
+
+              <div
+                onClick={() => setActiveTab('lyrics')}
+                className="cursor-pointer py-1"
+              >
+                <p className="text-lg sm:text-xl font-bold text-[var(--text-main)] group-hover:scale-102 transition-transform">
+                  {activeLyricText || 'Enjoy the music flow...'}
+                </p>
+              </div>
+
+              {/* Live Timing Nudge Controls */}
+              <div className="flex items-center justify-center gap-2 pt-1 border-t border-[var(--border-color)]/50">
+                <span className="text-[10px] text-[var(--text-muted)] font-mono">Sync:</span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleAdjustOffset(-0.5); }}
+                  className="px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-[var(--accent-orange)] hover:text-white text-[11px] font-bold font-mono transition-colors"
+                  title="Lyrics 0.5s earlier"
+                >
+                  -0.5s
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleResetOffset(); }}
+                  className={`px-2 py-0.5 rounded-lg text-[11px] font-mono transition-colors ${
+                    lyricOffset !== 0
+                      ? 'bg-[var(--accent-orange)] text-white font-bold'
+                      : 'bg-black/5 dark:bg-white/5 text-[var(--text-muted)]'
+                  }`}
+                  title="Reset sync offset"
+                >
+                  {lyricOffset === 0 ? '0.0s' : `${lyricOffset > 0 ? '+' : ''}${lyricOffset.toFixed(1)}s`}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleAdjustOffset(0.5); }}
+                  className="px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-[var(--accent-orange)] hover:text-white text-[11px] font-bold font-mono transition-colors"
+                  title="Lyrics 0.5s later"
+                >
+                  +0.5s
+                </button>
+              </div>
             </div>
 
             {/* Interactive Bass Boost Slider in Theater */}
@@ -484,14 +556,40 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
         ) : (
           /* Live Synchronized Lyrics Stage (Split view with Video or standalone Lyrics view) */
           <div className="flex flex-col h-[340px] sm:h-[400px] bg-[var(--bg-card)]/90 rounded-3xl border border-[var(--border-color)] shadow-xl backdrop-blur-md overflow-hidden">
-            {/* Header */}
+            {/* Header with Timing Sync Pill */}
             <div className="p-3 px-5 border-b border-[var(--border-color)] flex items-center justify-between bg-[var(--bg-card)] text-xs">
               <span className="font-bold flex items-center gap-1.5 text-[var(--text-main)]">
                 <Mic2 className="w-3.5 h-3.5 text-[var(--accent-orange)]" /> Synchronized Stream
               </span>
-              <span className="text-[10px] font-mono text-[var(--text-muted)]">
-                💡 Click any line to seek
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-[var(--text-muted)] font-mono hidden sm:inline">Sync:</span>
+                <button
+                  type="button"
+                  onClick={() => handleAdjustOffset(-0.5)}
+                  className="px-2 py-0.5 rounded-md bg-black/10 dark:bg-white/10 hover:bg-[var(--accent-orange)] hover:text-white text-[10px] font-mono font-bold transition-colors"
+                  title="Lyrics 0.5s earlier"
+                >
+                  -0.5s
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetOffset}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-mono transition-colors ${
+                    lyricOffset !== 0 ? 'bg-[var(--accent-orange)] text-white font-bold' : 'text-[var(--text-muted)]'
+                  }`}
+                  title="Reset to 0s"
+                >
+                  {lyricOffset === 0 ? '0.0s' : `${lyricOffset > 0 ? '+' : ''}${lyricOffset.toFixed(1)}s`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAdjustOffset(0.5)}
+                  className="px-2 py-0.5 rounded-md bg-black/10 dark:bg-white/10 hover:bg-[var(--accent-orange)] hover:text-white text-[10px] font-mono font-bold transition-colors"
+                  title="Lyrics 0.5s later"
+                >
+                  +0.5s
+                </button>
+              </div>
             </div>
 
             {/* Scrollable Lyrics Stream */}
