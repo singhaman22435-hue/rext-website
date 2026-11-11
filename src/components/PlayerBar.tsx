@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Track } from '../types';
 import {
   Play,
@@ -97,6 +97,16 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
 }) => {
   const [showBassPopover, setShowBassPopover] = useState(false);
 
+  // Desktop Drag Scrubbing State
+  const [isDraggingDesktop, setIsDraggingDesktop] = useState(false);
+  const [dragTimeDesktop, setDragTimeDesktop] = useState<number | null>(null);
+  const desktopScrubberRef = useRef<HTMLDivElement | null>(null);
+
+  // Mobile Drag Scrubbing State
+  const [isDraggingMobile, setIsDraggingMobile] = useState(false);
+  const [dragTimeMobile, setDragTimeMobile] = useState<number | null>(null);
+  const mobileScrubberRef = useRef<HTMLDivElement | null>(null);
+
   const formatTime = (secs: number) => {
     if (isNaN(secs) || secs < 0) return '0:00';
     const m = Math.floor(secs / 60);
@@ -104,7 +114,72 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const progressPercent = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const handlePointerDownDesktop = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDraggingDesktop(true);
+    if (desktopScrubberRef.current && duration > 0) {
+      const rect = desktopScrubberRef.current.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      setDragTimeDesktop(progress * duration);
+    }
+  };
+
+  const handlePointerMoveDesktop = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingDesktop || !desktopScrubberRef.current || duration <= 0) return;
+    const rect = desktopScrubberRef.current.getBoundingClientRect();
+    const progress = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setDragTimeDesktop(progress * duration);
+  };
+
+  const handlePointerUpDesktop = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isDraggingDesktop) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+      setIsDraggingDesktop(false);
+      if (dragTimeDesktop !== null) {
+        onSeek(dragTimeDesktop);
+        setDragTimeDesktop(null);
+      }
+    }
+  };
+
+  const handlePointerDownMobile = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDraggingMobile(true);
+    if (mobileScrubberRef.current && duration > 0) {
+      const rect = mobileScrubberRef.current.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      setDragTimeMobile(progress * duration);
+    }
+  };
+
+  const handlePointerMoveMobile = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingMobile || !mobileScrubberRef.current || duration <= 0) return;
+    const rect = mobileScrubberRef.current.getBoundingClientRect();
+    const progress = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setDragTimeMobile(progress * duration);
+  };
+
+  const handlePointerUpMobile = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isDraggingMobile) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+      setIsDraggingMobile(false);
+      if (dragTimeMobile !== null) {
+        onSeek(dragTimeMobile);
+        setDragTimeMobile(null);
+      }
+    }
+  };
+
+  const displayTimeDesktop = isDraggingDesktop && dragTimeDesktop !== null ? dragTimeDesktop : currentTime;
+  const displayPercentDesktop = duration ? Math.min(100, (displayTimeDesktop / duration) * 100) : 0;
+
+  const displayTimeMobile = isDraggingMobile && dragTimeMobile !== null ? dragTimeMobile : currentTime;
+  const displayPercentMobile = duration ? Math.min(100, (displayTimeMobile / duration) * 100) : 0;
 
   if (!currentTrack) {
     return null;
@@ -124,12 +199,35 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
         className="md:hidden fixed left-2.5 right-2.5 z-40 rounded-2xl bg-[var(--bg-card)]/95 backdrop-blur-2xl border border-[var(--border-color)] shadow-2xl overflow-hidden transition-all duration-300"
         style={{ bottom: 'calc(62px + max(0.35rem, env(safe-area-inset-bottom, 0px)))' }}
       >
-        {/* Slim Audio Progress Bar on top of mini-player */}
-        <div className="w-full h-1 bg-black/10 dark:bg-white/10 relative">
+        {/* Interactive Audio Progress Bar on top of mini-player */}
+        <div
+          ref={mobileScrubberRef}
+          onPointerDown={handlePointerDownMobile}
+          onPointerMove={handlePointerMoveMobile}
+          onPointerUp={handlePointerUpMobile}
+          onPointerCancel={handlePointerUpMobile}
+          className="w-full h-3 -mt-0.5 bg-black/10 dark:bg-white/10 relative cursor-pointer touch-none group select-none flex items-center"
+        >
           <div
-            className="h-full bg-[var(--accent-orange)] transition-all duration-200"
-            style={{ width: `${progressPercent}%` }}
-          />
+            className="h-1.5 group-hover:h-2 group-active:h-2 bg-[var(--accent-orange)] transition-all relative"
+            style={{ width: `${displayPercentMobile}%` }}
+          >
+            <div
+              className={`absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-md transition-opacity ${
+                isDraggingMobile ? 'opacity-100 scale-125' : 'opacity-0'
+              }`}
+            />
+          </div>
+
+          {/* Floating Live Drag Badge on Mobile */}
+          {isDraggingMobile && (
+            <div
+              className="absolute -top-7 px-2 py-0.5 rounded-full bg-[var(--accent-orange)] text-white text-[10px] font-mono font-bold shadow-lg pointer-events-none -translate-x-1/2"
+              style={{ left: `${displayPercentMobile}%` }}
+            >
+              {formatTime(displayTimeMobile)}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between px-3 py-2 gap-2">
@@ -246,22 +344,32 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
       {/* ======================================================== */}
       <footer className="hidden md:flex fixed bottom-0 left-0 right-0 z-40 bg-[var(--bg-card)]/95 backdrop-blur-2xl border-t border-[var(--border-color)] px-4 md:px-6 py-2.5 flex-col gap-1.5 shadow-xl transition-colors duration-300">
         {/* Top Scrubber Line */}
-        <div className="w-full flex items-center gap-3 text-xs font-mono text-[var(--text-muted)]">
-          <span className="w-9 text-right text-[var(--text-main)] font-semibold">{formatTime(currentTime)}</span>
+        <div className="w-full flex items-center gap-3 text-xs font-mono text-[var(--text-muted)] select-none">
+          <span className="w-9 text-right text-[var(--text-main)] font-semibold">{formatTime(displayTimeDesktop)}</span>
           <div
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const clickX = e.clientX - rect.left;
-              const newTime = (clickX / rect.width) * duration;
-              onSeek(newTime);
-            }}
-            className="flex-1 h-1.5 hover:h-2.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden cursor-pointer relative group transition-all"
+            ref={desktopScrubberRef}
+            onPointerDown={handlePointerDownDesktop}
+            onPointerMove={handlePointerMoveDesktop}
+            onPointerUp={handlePointerUpDesktop}
+            onPointerCancel={handlePointerUpDesktop}
+            className="flex-1 h-2 hover:h-3 bg-black/10 dark:bg-white/10 rounded-full cursor-pointer relative group transition-all touch-none py-0.5"
           >
             <div
               className="h-full bg-[var(--accent-orange)] rounded-full relative"
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${displayPercentDesktop}%` }}
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div
+                className={`absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-md transition-all ${
+                  isDraggingDesktop ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'
+                }`}
+              />
+
+              {/* Floating Live Drag Tooltip on Desktop */}
+              {isDraggingDesktop && (
+                <div className="absolute -top-7 right-0 translate-x-1/2 px-2 py-0.5 rounded-md bg-[var(--accent-orange)] text-white text-[10px] font-mono font-bold shadow-lg pointer-events-none">
+                  {formatTime(displayTimeDesktop)}
+                </div>
+              )}
             </div>
           </div>
           <span className="w-9 text-left">{formatTime(duration)}</span>

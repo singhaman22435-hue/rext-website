@@ -109,6 +109,41 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
 
   const lyrics = lyricsData?.synced && lyricsData.synced.length > 0 ? lyricsData.synced : track?.lyrics || [];
 
+  // Scrubber Dragging State
+  const [isDraggingScrubber, setIsDraggingScrubber] = useState(false);
+  const [dragTime, setDragTime] = useState<number | null>(null);
+  const scrubberRef = useRef<HTMLDivElement | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDraggingScrubber(true);
+    if (scrubberRef.current && duration > 0) {
+      const rect = scrubberRef.current.getBoundingClientRect();
+      const progress = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      setDragTime(progress * duration);
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingScrubber || !scrubberRef.current || duration <= 0) return;
+    const rect = scrubberRef.current.getBoundingClientRect();
+    const progress = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    setDragTime(progress * duration);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isDraggingScrubber) {
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+      setIsDraggingScrubber(false);
+      if (dragTime !== null) {
+        onSeek(dragTime);
+        setDragTime(null);
+      }
+    }
+  };
+
   let activeIndex = -1;
   let activeLyricText = '';
   for (let i = 0; i < lyrics.length; i++) {
@@ -139,7 +174,8 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
     return `${mins}:${remainder < 10 ? '0' : ''}${remainder}`;
   };
 
-  const progressPercent = duration ? (currentTime / duration) * 100 : 0;
+  const displayCurrentTime = isDraggingScrubber && dragTime !== null ? dragTime : currentTime;
+  const displayProgressPercent = duration ? (displayCurrentTime / duration) * 100 : 0;
 
   return (
     <div
@@ -504,22 +540,32 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
       {/* Bottom Controls Bar */}
       <div className="relative z-10 max-w-4xl mx-auto w-full space-y-3 sm:space-y-4">
         {/* Scrubber */}
-        <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono text-[var(--text-muted)]">
-          <span>{formatTime(currentTime)}</span>
+        <div className="flex items-center gap-3 sm:gap-4 text-xs font-mono text-[var(--text-muted)] select-none">
+          <span>{formatTime(displayCurrentTime)}</span>
           <div
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const clickX = e.clientX - rect.left;
-              const newTime = (clickX / rect.width) * duration;
-              onSeek(newTime);
-            }}
-            className="flex-1 h-2 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden cursor-pointer relative group"
+            ref={scrubberRef}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            className="flex-1 h-2.5 hover:h-3.5 bg-black/10 dark:bg-white/10 rounded-full cursor-pointer relative group transition-all touch-none py-0.5"
           >
             <div
               className="h-full bg-gradient-to-r from-[var(--accent-orange)] to-[var(--accent-blue)] rounded-full relative"
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${displayProgressPercent}%` }}
             >
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div
+                className={`absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg transition-transform ${
+                  isDraggingScrubber ? 'scale-125' : 'scale-100 opacity-0 group-hover:opacity-100'
+                }`}
+              />
+
+              {/* Floating Tooltip Pill */}
+              {isDraggingScrubber && (
+                <div className="absolute -top-7 right-0 translate-x-1/2 px-2.5 py-0.5 rounded-lg bg-[var(--accent-orange)] text-white text-[11px] font-mono font-bold shadow-xl pointer-events-none">
+                  {formatTime(displayCurrentTime)}
+                </div>
+              )}
             </div>
           </div>
           <span>{formatTime(duration)}</span>

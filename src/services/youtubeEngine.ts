@@ -236,7 +236,7 @@ class YouTubeEngine {
     return this.isVideoVisible;
   }
 
-  public async loadAndPlay(videoId: string): Promise<boolean> {
+  public async loadAndPlay(videoId: string, startSeconds: number = 0): Promise<boolean> {
     this.currentVideoId = videoId;
     this.queuedVideoId = videoId;
 
@@ -248,7 +248,7 @@ class YouTubeEngine {
     }
 
     try {
-      this.player.loadVideoById(videoId, 0, 'hd1080');
+      this.player.loadVideoById(videoId, startSeconds, 'hd1080');
       try {
         this.player.unMute();
         this.player.setVolume(this.currentVolume);
@@ -266,6 +266,14 @@ class YouTubeEngine {
     }
   }
 
+  public seek(seconds: number) {
+    if (this.player && typeof this.player.seekTo === 'function') {
+      try {
+        this.player.seekTo(seconds, true);
+      } catch {}
+    }
+  }
+
   public play() {
     if (this.player && typeof this.player.playVideo === 'function') {
       this.player.playVideo();
@@ -277,12 +285,6 @@ class YouTubeEngine {
     if (this.player && typeof this.player.pauseVideo === 'function') {
       this.player.pauseVideo();
       this.stopProgressPolling();
-    }
-  }
-
-  public seek(seconds: number) {
-    if (this.player && typeof this.player.seekTo === 'function') {
-      this.player.seekTo(seconds, true);
     }
   }
 

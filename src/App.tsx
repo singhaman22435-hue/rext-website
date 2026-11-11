@@ -409,8 +409,11 @@ export const App: React.FC = () => {
 
   // Play a track
   const handlePlayTrack = useCallback(
-    async (track: Track) => {
+    async (track: Track, startSeconds: number = 0) => {
       setCurrentTrack(track);
+      if (startSeconds > 0) {
+        setCurrentTime(startSeconds);
+      }
       StorageService.addRecentTrack(track.id);
 
       const isYt = Boolean(track.youtubeId || track.source === 'youtube');
@@ -420,7 +423,7 @@ export const App: React.FC = () => {
         const ytId =
           track.youtubeId || (track.audioUrl.match(/(?:youtu\.be\/|v=)([\w-]{11})/) || [])[1];
         if (ytId) {
-          await youtubeEngine.loadAndPlay(ytId);
+          await youtubeEngine.loadAndPlay(ytId, startSeconds);
           youtubeEngine.setVolume(isMuted ? 0 : volume);
           if (youtubeEngine.player?.setPlaybackRate) {
             try {
@@ -436,6 +439,9 @@ export const App: React.FC = () => {
           await audioEngine.loadAndPlay(blobUrl);
         } else {
           await audioEngine.loadAndPlay(track.audioUrl);
+        }
+        if (startSeconds > 0) {
+          audioEngine.seek(startSeconds);
         }
         audioEngine.setBassBoost(bassBoost);
         audioEngine.setTrebleBoost(trebleBoost);
@@ -469,18 +475,46 @@ export const App: React.FC = () => {
         audioEngine.pause();
       }
       setIsPlaying(false);
+      StorageService.setLastPlayback(currentTrack.id, currentTime);
     } else {
       if (isYt) {
-        youtubeEngine.play();
+        if (!youtubeEngine.getCurrentVideoId()) {
+          const ytId =
+            currentTrack.youtubeId || (currentTrack.audioUrl.match(/(?:youtu\.be\/|v=)([\w-]{11})/) || [])[1];
+          if (ytId) {
+            youtubeEngine.loadAndPlay(ytId, currentTime);
+          }
+        } else {
+          youtubeEngine.play();
+        }
       } else {
-        audioEngine.play();
+        if (!audioEngine.audioElement?.src) {
+          audioEngine.loadAndPlay(currentTrack.audioUrl);
+          if (currentTime > 0) audioEngine.seek(currentTime);
+        } else {
+          audioEngine.play();
+        }
       }
       setIsPlaying(true);
     }
-  }, [currentTrack, isPlaying]);
+  }, [currentTrack, isPlaying, currentTime]);
 
-  // Next / Previous Track (checks playQueue first!)
+  // Next / Previous Track (checks repeatMode and playQueue first!)
   const handleNextTrack = useCallback(() => {
+    // 0. Repeat Single Track Mode
+    if (repeatMode === 'one' && currentTrack) {
+      handleSeek(0);
+      if (!isPlaying) {
+        if (currentTrack.youtubeId || currentTrack.source === 'youtube') {
+          youtubeEngine.play();
+        } else {
+          audioEngine.play();
+        }
+        setIsPlaying(true);
+      }
+      return;
+    }
+
     // Check if sleep timer was set for end of current song
     if (sleepTimerEnd === -1) {
       if (isPlaying) handleTogglePlay();
@@ -511,11 +545,13 @@ export const App: React.FC = () => {
       handlePlayTrack(tracks[nextIndex]);
     }
   }, [
+    repeatMode,
+    currentTrack,
+    handleSeek,
     sleepTimerEnd,
     isPlaying,
     handleTogglePlay,
     playQueue,
-    currentTrack,
     tracks,
     isShuffle,
     handlePlayTrack,
@@ -571,6 +607,16 @@ export const App: React.FC = () => {
         };
         handlePlayTrack(directYtTrack);
       }
+    } else {
+      const last = StorageService.getLastPlayback();
+      if (last) {
+        const found = CURATED_TRACKS.find((t) => t.id === last.trackId);
+        if (found) {
+          setCurrentTrack(found);
+          setCurrentTime(last.time);
+          setDuration(found.duration);
+        }
+      }
     }
 
     const loadTimer = setTimeout(() => {
@@ -579,6 +625,13 @@ export const App: React.FC = () => {
 
     return () => clearTimeout(loadTimer);
   }, [handlePlayTrack]);
+
+  // Periodically persist playback position for exact resume
+  useEffect(() => {
+    if (currentTrack && currentTime > 0) {
+      StorageService.setLastPlayback(currentTrack.id, currentTime);
+    }
+  }, [currentTrack?.id, Math.floor(currentTime / 3)]);
 
   // Connect Audio & YouTube Engine Callbacks
   useEffect(() => {

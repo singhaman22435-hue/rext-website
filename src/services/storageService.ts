@@ -54,6 +54,24 @@ export class StorageService {
   }
 
   /**
+   * Last Playback State (for resuming exact timestamp)
+   */
+  static getLastPlayback(): { trackId: string; time: number } | null {
+    try {
+      const data = localStorage.getItem('rext_last_playback');
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  static setLastPlayback(trackId: string, time: number): void {
+    try {
+      localStorage.setItem('rext_last_playback', JSON.stringify({ trackId, time: Math.floor(time) }));
+    } catch {}
+  }
+
+  /**
    * Custom User Playlists (CRUD)
    */
   static getUserPlaylists(): Playlist[] {
