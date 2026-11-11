@@ -581,6 +581,489 @@ export const CURATED_TRACKS: Track[] = [
     lyrics: [
       { time: 0, text: "Pain! You made me a, you made me a believer, believer" }
     ]
+  },
+  // 6. Modern Viral Reels & Global Hits
+  {
+    id: 'yt-eVli-tstM5E',
+    youtubeId: 'eVli-tstM5E',
+    source: 'youtube',
+    title: 'Espresso',
+    artist: 'Sabrina Carpenter',
+    album: "Short n' Sweet",
+    coverUrl: 'https://i.ytimg.com/vi/eVli-tstM5E/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=eVli-tstM5E',
+    duration: 175,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 88,
+    plays: 1450000000,
+    lyrics: [
+      { time: 0, text: "Now he's thinkin' 'bout me every night, oh" },
+      { time: 8, text: "Is it that sweet? I guess so" },
+      { time: 14, text: "Say you can't sleep, baby, I know" },
+      { time: 20, text: "That's that me, espresso" }
+    ]
+  },
+  {
+    id: 'yt-V9PVRfjEBTI',
+    youtubeId: 'V9PVRfjEBTI',
+    source: 'youtube',
+    title: 'BIRDS OF A FEATHER',
+    artist: 'Billie Eilish',
+    album: 'HIT ME HARD AND SOFT',
+    coverUrl: 'https://i.ytimg.com/vi/V9PVRfjEBTI/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=V9PVRfjEBTI',
+    duration: 196,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 82,
+    plays: 1320000000,
+    lyrics: [
+      { time: 0, text: "Birds of a feather, we should stick together, I know" },
+      { time: 8, text: "I said I'd never think I wasn't better alone" },
+      { time: 16, text: "Can't change the weather, might not be forever" },
+      { time: 24, text: "But if it's forever, it's even better" }
+    ]
+  },
+  {
+    id: 'yt-rohn_n_b7K8',
+    youtubeId: 'rohn_n_b7K8',
+    source: 'youtube',
+    title: 'Tauba Tauba',
+    artist: 'Karan Aujla',
+    album: 'Bad Newz',
+    coverUrl: 'https://i.ytimg.com/vi/rohn_n_b7K8/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=rohn_n_b7K8',
+    duration: 208,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 94,
+    plays: 890000000,
+    lyrics: [
+      { time: 0, text: "Husn tera tauba tauba, nakhra tera tauba tauba" },
+      { time: 10, text: "Oh tauba tauba, oh tauba tauba" },
+      { time: 20, text: "Tere agge piche aave munde line'an maar ke" }
+    ]
+  },
+  {
+    id: 'yt-a3Ue-LN5B9U',
+    youtubeId: 'a3Ue-LN5B9U',
+    source: 'youtube',
+    title: 'Aasa Kooda',
+    artist: 'Sai Abhyankkar',
+    album: 'Think Indie',
+    coverUrl: 'https://i.ytimg.com/vi/a3Ue-LN5B9U/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=a3Ue-LN5B9U',
+    duration: 198,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 90,
+    plays: 450000000,
+    lyrics: [
+      { time: 0, text: "Aasa kooda vaazha venum un kooda" },
+      { time: 8, text: "Kaalam poora neeye venum en thoda" }
+    ]
+  },
+  {
+    id: 'yt-WcIcVapfqXw',
+    youtubeId: 'WcIcVapfqXw',
+    source: 'youtube',
+    title: 'Calm Down',
+    artist: 'Rema & Selena Gomez',
+    album: 'Rave & Climax',
+    coverUrl: 'https://i.ytimg.com/vi/WcIcVapfqXw/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=WcIcVapfqXw',
+    duration: 239,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2022,
+    bassLevel: 91,
+    plays: 1200000000,
+    lyrics: [
+      { time: 0, text: "Baby, calm down, calm down" },
+      { time: 6, text: "Girl, this your body e put my heart for lockdown" },
+      { time: 12, text: "For lockdown, oh, lockdown" }
+    ]
+  },
+  {
+    id: 'yt-UTHLKhlFeHU',
+    youtubeId: 'UTHLKhlFeHU',
+    source: 'youtube',
+    title: 'INDUSTRY BABY',
+    artist: 'Lil Nas X & Jack Harlow',
+    album: 'MONTERO',
+    coverUrl: 'https://i.ytimg.com/vi/UTHLKhlFeHU/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=UTHLKhlFeHU',
+    duration: 212,
+    genre: 'Hip-Hop',
+    bitrate: '320 kbps Master',
+    year: 2021,
+    bassLevel: 95,
+    plays: 2100000000,
+    lyrics: [
+      { time: 0, text: "Baby back, ayy, couple racks, ayy" },
+      { time: 6, text: "Couple feature, ayy, on the map, ayy" },
+      { time: 12, text: "And this one is for the champions" }
+    ]
+  },
+  {
+    id: 'yt-B9synWjqBn8',
+    youtubeId: 'B9synWjqBn8',
+    source: 'youtube',
+    title: 'FE!N',
+    artist: 'Travis Scott ft. Playboi Carti',
+    album: 'UTOPIA',
+    coverUrl: 'https://i.ytimg.com/vi/B9synWjqBn8/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=B9synWjqBn8',
+    duration: 191,
+    genre: 'Hip-Hop',
+    bitrate: '320 kbps Master',
+    year: 2023,
+    bassLevel: 98,
+    plays: 950000000,
+    lyrics: [
+      { time: 0, text: "FE!N, FE!N, FE!N, FE!N, FE!N" },
+      { time: 8, text: "The career's more at stake when you in your prime" }
+    ]
+  },
+  {
+    id: 'yt-kPa7bsKwL-8',
+    youtubeId: 'kPa7bsKwL-8',
+    source: 'youtube',
+    title: 'Die With A Smile',
+    artist: 'Lady Gaga & Bruno Mars',
+    album: 'Die With A Smile',
+    coverUrl: 'https://i.ytimg.com/vi/kPa7bsKwL-8/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=kPa7bsKwL-8',
+    duration: 251,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 86,
+    plays: 870000000,
+    lyrics: [
+      { time: 0, text: "If the world was ending, I'd wanna be next to you" },
+      { time: 10, text: "If the party was over and our time on Earth was through" },
+      { time: 20, text: "I'd wanna hold you just for a while and die with a smile" }
+    ]
+  },
+  {
+    id: 'yt-H58vbez_m4E',
+    youtubeId: 'H58vbez_m4E',
+    source: 'youtube',
+    title: 'Not Like Us',
+    artist: 'Kendrick Lamar',
+    album: 'Not Like Us',
+    coverUrl: 'https://i.ytimg.com/vi/H58vbez_m4E/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=H58vbez_m4E',
+    duration: 274,
+    genre: 'Hip-Hop',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 96,
+    plays: 1300000000,
+    lyrics: [
+      { time: 0, text: "Mustard on the beat, ho" },
+      { time: 6, text: "They not like us, they not like us, they not like us" }
+    ]
+  },
+  {
+    id: 'yt-xG08N4eC35U',
+    youtubeId: 'xG08N4eC35U',
+    source: 'youtube',
+    title: 'Gata Only',
+    artist: 'FloyyMenor & Cris Mj',
+    album: 'Gata Only',
+    coverUrl: 'https://i.ytimg.com/vi/xG08N4eC35U/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=xG08N4eC35U',
+    duration: 222,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 92,
+    plays: 1100000000,
+    lyrics: [
+      { time: 0, text: "Te quedas sola o te vienes conmigo" }
+    ]
+  },
+  {
+    id: 'yt-XoiOOiuH8iI',
+    youtubeId: 'XoiOOiuH8iI',
+    source: 'youtube',
+    title: 'Water',
+    artist: 'Tyla',
+    album: 'TYLA',
+    coverUrl: 'https://i.ytimg.com/vi/XoiOOiuH8iI/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=XoiOOiuH8iI',
+    duration: 200,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2023,
+    bassLevel: 90,
+    plays: 850000000,
+    lyrics: [
+      { time: 0, text: "Make me sweat, make me hotter" },
+      { time: 6, text: "Make me lose my breath, make me water" }
+    ]
+  },
+  {
+    id: 'yt-toea_w8kK2M',
+    youtubeId: 'toea_w8kK2M',
+    source: 'youtube',
+    title: 'greedy',
+    artist: 'Tate McRae',
+    album: 'THINK LATER',
+    coverUrl: 'https://i.ytimg.com/vi/toea_w8kK2M/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=toea_w8kK2M',
+    duration: 131,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2023,
+    bassLevel: 92,
+    plays: 1150000000,
+    lyrics: [
+      { time: 0, text: "I would want myself, baby, please believe me" },
+      { time: 8, text: "I'll put you through hell just to know me, yeah, yeah" }
+    ]
+  },
+  {
+    id: 'yt-VAdGW7QDJUI',
+    youtubeId: 'VAdGW7QDJUI',
+    source: 'youtube',
+    title: 'Chaleya',
+    artist: 'Arijit Singh & Shilpa Rao',
+    album: 'Jawan',
+    coverUrl: 'https://i.ytimg.com/vi/VAdGW7QDJUI/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=VAdGW7QDJUI',
+    duration: 200,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2023,
+    bassLevel: 87,
+    plays: 750000000,
+    lyrics: [
+      { time: 0, text: "Ishq mein dil bana hai, ishq mein dil fanaa hai" },
+      { time: 10, text: "Teri chahat mein main chaleya, main chaleya" }
+    ]
+  },
+  {
+    id: 'yt-ElZfdU54Cp8',
+    youtubeId: 'ElZfdU54Cp8',
+    source: 'youtube',
+    title: 'Apna Bana Le',
+    artist: 'Arijit Singh',
+    album: 'Bhediya',
+    coverUrl: 'https://i.ytimg.com/vi/ElZfdU54Cp8/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=ElZfdU54Cp8',
+    duration: 261,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2022,
+    bassLevel: 85,
+    plays: 820000000,
+    lyrics: [
+      { time: 0, text: "Apna bana le piya, apna bana le piya" },
+      { time: 12, text: "Dil ke nagar mein shehar tu basa le piya" }
+    ]
+  },
+  {
+    id: 'yt-0U_S310YhD8',
+    youtubeId: '0U_S310YhD8',
+    source: 'youtube',
+    title: 'Elevated',
+    artist: 'Shubh',
+    album: 'Elevated',
+    coverUrl: 'https://i.ytimg.com/vi/0U_S310YhD8/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=0U_S310YhD8',
+    duration: 200,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2022,
+    bassLevel: 94,
+    plays: 620000000,
+    lyrics: [
+      { time: 0, text: "Gaddi kaali dooron jaandi labhdi" }
+    ]
+  },
+  {
+    id: 'yt-2yS_803nQ1k',
+    youtubeId: '2yS_803nQ1k',
+    source: 'youtube',
+    title: 'No Love',
+    artist: 'Shubh',
+    album: 'No Love',
+    coverUrl: 'https://i.ytimg.com/vi/2yS_803nQ1k/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=2yS_803nQ1k',
+    duration: 170,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2022,
+    bassLevel: 93,
+    plays: 580000000,
+    lyrics: [
+      { time: 0, text: "Bhavein lakh vaari karr jhoothe vaade soniye" }
+    ]
+  },
+  {
+    id: 'yt-WpYeekQkAdc',
+    youtubeId: 'WpYeekQkAdc',
+    source: 'youtube',
+    title: 'Winning Speech',
+    artist: 'Karan Aujla',
+    album: 'Winning Speech',
+    coverUrl: 'https://i.ytimg.com/vi/WpYeekQkAdc/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=WpYeekQkAdc',
+    duration: 215,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 96,
+    plays: 430000000,
+    lyrics: [
+      { time: 0, text: "Winning speech likhi baitha jatt ni" }
+    ]
+  },
+  {
+    id: 'yt-cWMxCE2HTag',
+    youtubeId: 'cWMxCE2HTag',
+    source: 'youtube',
+    title: 'Softly',
+    artist: 'Karan Aujla',
+    album: 'Making Memories',
+    coverUrl: 'https://i.ytimg.com/vi/cWMxCE2HTag/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=cWMxCE2HTag',
+    duration: 155,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2023,
+    bassLevel: 94,
+    plays: 510000000,
+    lyrics: [
+      { time: 0, text: "Pyaar naal samjhaawan tenu softly" }
+    ]
+  },
+  {
+    id: 'yt-vX2cDW8LUWk',
+    youtubeId: 'vX2cDW8LUWk',
+    source: 'youtube',
+    title: 'Excuses',
+    artist: 'AP Dhillon & Gurinder Gill',
+    album: 'Hidden Gems',
+    coverUrl: 'https://i.ytimg.com/vi/vX2cDW8LUWk/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=vX2cDW8LUWk',
+    duration: 176,
+    genre: 'Desi',
+    bitrate: '320 kbps Master',
+    year: 2020,
+    bassLevel: 91,
+    plays: 780000000,
+    lyrics: [
+      { time: 0, text: "Kehndi hundi si chan tak raah bana de" },
+      { time: 8, text: "Taare ne pasand mainu hethaan saare laa de" }
+    ]
+  },
+  {
+    id: 'yt-5p4e5U-w8W4',
+    youtubeId: '5p4e5U-w8W4',
+    source: 'youtube',
+    title: 'Montagem Mysterious Game',
+    artist: 'LXNGVX',
+    album: 'Phonk Supercharged',
+    coverUrl: 'https://i.ytimg.com/vi/5p4e5U-w8W4/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=5p4e5U-w8W4',
+    duration: 135,
+    genre: 'Phonk',
+    bitrate: '320 kbps Master',
+    year: 2024,
+    bassLevel: 99,
+    plays: 350000000,
+    lyrics: [
+      { time: 0, text: "Heavy bass phonk rhythm drop" }
+    ]
+  },
+  {
+    id: 'yt-mRD0-GxqHVo',
+    youtubeId: 'mRD0-GxqHVo',
+    source: 'youtube',
+    title: 'Heat Waves',
+    artist: 'Glass Animals',
+    album: 'Dreamland',
+    coverUrl: 'https://i.ytimg.com/vi/mRD0-GxqHVo/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=mRD0-GxqHVo',
+    duration: 238,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2020,
+    bassLevel: 89,
+    plays: 2800000000,
+    lyrics: [
+      { time: 0, text: "Sometimes, all I think about is you" },
+      { time: 8, text: "Late nights in the middle of June" }
+    ]
+  },
+  {
+    id: 'yt-kTJczUoc26U',
+    youtubeId: 'kTJczUoc26U',
+    source: 'youtube',
+    title: 'STAY',
+    artist: 'The Kid LAROI & Justin Bieber',
+    album: 'F*CK LOVE 3',
+    coverUrl: 'https://i.ytimg.com/vi/kTJczUoc26U/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=kTJczUoc26U',
+    duration: 141,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2021,
+    bassLevel: 88,
+    plays: 3100000000,
+    lyrics: [
+      { time: 0, text: "I do the same thing I told you that I never would" },
+      { time: 6, text: "I told you I'd change, even when I knew I never could" }
+    ]
+  },
+  {
+    id: 'yt-XXYlFuWEuKI',
+    youtubeId: 'XXYlFuWEuKI',
+    source: 'youtube',
+    title: 'Save Your Tears',
+    artist: 'The Weeknd',
+    album: 'After Hours',
+    coverUrl: 'https://i.ytimg.com/vi/XXYlFuWEuKI/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=XXYlFuWEuKI',
+    duration: 215,
+    genre: 'Pop',
+    bitrate: '320 kbps Master',
+    year: 2020,
+    bassLevel: 89,
+    plays: 2500000000,
+    lyrics: [
+      { time: 0, text: "I saw you dancing in a crowded room" },
+      { time: 8, text: "You look so happy when I'm not with you" },
+      { time: 16, text: "Save your tears for another day" }
+    ]
+  },
+  {
+    id: 'yt-D9G1VOjN_84',
+    youtubeId: 'D9G1VOjN_84',
+    source: 'youtube',
+    title: 'Enemy',
+    artist: 'Imagine Dragons x J.I.D',
+    album: 'Arcane League of Legends',
+    coverUrl: 'https://i.ytimg.com/vi/D9G1VOjN_84/hqdefault.jpg',
+    audioUrl: 'https://www.youtube.com/watch?v=D9G1VOjN_84',
+    duration: 173,
+    genre: 'Rock',
+    bitrate: '320 kbps Master',
+    year: 2021,
+    bassLevel: 93,
+    plays: 1800000000,
+    lyrics: [
+      { time: 0, text: "Oh, the misery, everybody wants to be my enemy" }
+    ]
   }
 ];
 
