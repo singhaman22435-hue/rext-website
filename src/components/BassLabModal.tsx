@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { EQ_PRESETS } from '../services/audioEngine';
-import { EqualizerBand, EqualizerPreset } from '../types';
+import { EqualizerBand, EqualizerPreset, Track } from '../types';
 import { VisualizerCanvas } from './VisualizerCanvas';
 import {
   Sliders,
@@ -25,6 +25,9 @@ interface BassLabModalProps {
   onEqBandChange: (index: number, gain: number) => void;
   activePresetId: string;
   onSelectPreset: (preset: EqualizerPreset) => void;
+  isPlaying?: boolean;
+  track?: Track | null;
+  currentTime?: number;
 }
 
 export const BassLabModal: React.FC<BassLabModalProps> = ({
@@ -40,6 +43,9 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
   onEqBandChange,
   activePresetId,
   onSelectPreset,
+  isPlaying = false,
+  track = null,
+  currentTime = 0,
 }) => {
   // ESC key dismiss
   useEffect(() => {
@@ -120,7 +126,15 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
               Bass: +{bassBoost.toFixed(0)} dB
             </span>
           </div>
-          <VisualizerCanvas height={70} mode="bars" showControls={false} />
+          <VisualizerCanvas
+            height={70}
+            mode="bars"
+            showControls={false}
+            isPlaying={isPlaying}
+            track={track}
+            bassBoost={bassBoost}
+            currentTime={currentTime}
+          />
         </div>
 
         {/* Studio Master DSP Status Banner */}

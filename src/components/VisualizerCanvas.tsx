@@ -37,6 +37,11 @@ export const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
   const bassLevelScale = ((track?.bassLevel || 85) / 100);
   const boostMultiplier = 1.0 + (bassBoost / 6) * 0.45;
 
+  const currentTimeRef = useRef(currentTime);
+  useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -74,40 +79,42 @@ export const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
       }
 
       const now = performance.now() * 0.001;
+      const curTime = currentTimeRef.current;
+      const beatTime = (curTime > 0 && isPlaying) ? curTime : now;
 
       // When playing via YouTube (where WebAudio analyzer is silent), synthesize musical spectrum!
       if (sum < 5 && isPlaying) {
-        // True beat cycle from song tempo (BPM)
+        // True beat cycle locked to song tempo (BPM) and current playback timestamp
         const beatFreq = bpm / 60; // beats per second (e.g. ~2.25 Hz for 135 BPM)
-        const beatPhase = (now * beatFreq) % 1; // 0 to 1 cycle
+        const beatPhase = (beatTime * beatFreq) % 1; // 0 to 1 cycle
         
         // 808 Sub-bass kick impact curve
         const kickDrop = Math.pow(Math.max(0, 1 - beatPhase * 1.7), 2.2) * bassLevelScale * boostMultiplier;
         // Snare / clap transient on 2 and 4
         const snareDrop = Math.pow(Math.max(0, 1 - Math.abs(beatPhase - 0.5) * 4), 2.5);
         // Hi-hat 16th note flutter
-        const hihat = Math.sin(now * beatFreq * 8 * Math.PI) * 0.25 + 0.25;
+        const hihat = Math.sin(beatTime * beatFreq * 8 * Math.PI) * 0.25 + 0.25;
 
         for (let i = 0; i < bufferLength; i++) {
           const normIdx = i / bufferLength;
           let val = 0;
 
-          if (normIdx < 0.25) {
+          if (normIdx < 0.22) {
             // Low frequencies: Sub-bass 30Hz - 200Hz
-            const subOsc = Math.sin(now * 30 + i * 0.4) * 0.2 + 0.8;
-            val = (kickDrop * 190 * subOsc) + (Math.sin(now * 4 + i) * 20) + (boostMultiplier * 25);
+            const subOsc = Math.sin(beatTime * 30 + i * 0.4) * 0.2 + 0.8;
+            val = (kickDrop * 190 * subOsc) + (Math.sin(beatTime * 4 + i) * 20) + (boostMultiplier * 25);
           } else if (normIdx < 0.65) {
             // Mid frequencies: Vocals and Synths 200Hz - 2.5kHz
-            const vocalOsc = Math.sin(now * 8 + i * 0.3) * 0.35 + 0.65;
-            val = (snareDrop * 110) + (vocalOsc * 95) + (Math.cos(now * 2.5 + i * 0.2) * 25);
+            const vocalOsc = Math.sin(beatTime * 8 + i * 0.3) * 0.35 + 0.65;
+            val = (snareDrop * 110) + (vocalOsc * 95) + (Math.cos(beatTime * 2.5 + i * 0.2) * 25);
           } else {
             // High frequencies: Cymbals and Hi-Hats 2.5kHz - 16kHz
-            const trebleOsc = (Math.sin(now * 25 + i * 0.6) + 1) * 0.5;
+            const trebleOsc = (Math.sin(beatTime * 25 + i * 0.6) + 1) * 0.5;
             val = (hihat * 120 * trebleOsc) + (Math.random() * 20);
           }
 
           freqData[i] = Math.max(12, Math.min(250, Math.floor(val)));
-          timeData[i] = Math.floor(128 + Math.sin(now * 15 + i * 0.3) * (kickDrop * 50 + 20));
+          timeData[i] = Math.floor(128 + Math.sin(beatTime * 15 + i * 0.3) * (kickDrop * 50 + 20));
         }
         sum = 20 * 60;
       } else if (!isPlaying) {
@@ -130,7 +137,8 @@ export const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
         const gap = (width / barCount) * 0.28;
 
         for (let i = 0; i < barCount; i++) {
-          const sampleIndex = Math.floor((i / barCount) * (bufferLength / 2));
+          // Sample across entire 128 frequency bands from 0 (sub-bass) to 127 (ultra-high)
+          const sampleIndex = Math.min(bufferLength - 1, Math.floor((i / barCount) * bufferLength));
           const value = freqData[sampleIndex] || 0;
           const percent = value / 255;
           const targetHeight = Math.max(6, percent * (h - 14));

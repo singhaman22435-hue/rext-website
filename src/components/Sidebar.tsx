@@ -13,7 +13,8 @@ import {
   Plus,
   FolderPlus,
   TrendingUp,
-  Flame
+  Flame,
+  Trash2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ interface SidebarProps {
   selectedPlaylistId: string | null;
   onSelectPlaylist: (playlist: Playlist) => void;
   onOpenCreatePlaylist?: () => void;
+  onDeleteUserPlaylist?: (id: string) => void;
   bassBoost: number;
   likedCount: number;
   downloadCount: number;
@@ -41,6 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedPlaylistId,
   onSelectPlaylist,
   onOpenCreatePlaylist,
+  onDeleteUserPlaylist,
   bassBoost,
   likedCount,
   downloadCount,
@@ -189,20 +192,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {userPlaylists.map((pl) => {
               const isSelected = selectedPlaylistId === pl.id;
               return (
-                <button
+                <div
                   key={pl.id}
-                  onClick={() => onSelectPlaylist(pl)}
-                  className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium truncate transition-colors flex items-center justify-between ${
+                  className={`group/pl w-full px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center justify-between ${
                     isSelected
                       ? 'bg-[var(--bg-surface)] text-[var(--accent-orange)] font-bold shadow-sm'
                       : 'text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
                   }`}
                 >
-                  <span className="truncate">{pl.name}</span>
-                  <span className="text-[10px] font-mono text-[var(--text-muted)]">
-                    {pl.trackIds.length}
-                  </span>
-                </button>
+                  <button
+                    onClick={() => onSelectPlaylist(pl)}
+                    className="flex-1 text-left truncate flex items-center justify-between mr-1"
+                  >
+                    <span className="truncate">{pl.name}</span>
+                    <span className="text-[10px] font-mono text-[var(--text-muted)] ml-1">
+                      {pl.trackIds.length}
+                    </span>
+                  </button>
+                  {onDeleteUserPlaylist && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteUserPlaylist(pl.id);
+                      }}
+                      className="opacity-0 group-hover/pl:opacity-100 p-1 text-[var(--text-muted)] hover:text-red-500 rounded transition-all"
+                      title="Delete playlist"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               );
             })}
 

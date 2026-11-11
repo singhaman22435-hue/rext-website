@@ -136,6 +136,7 @@ export const App: React.FC = () => {
   // Sleep Timer
   const [isSleepTimerOpen, setIsSleepTimerOpen] = useState(false);
   const [sleepTimerEnd, setSleepTimerEnd] = useState<number | null>(null); // ms or -1 for end of song
+  const [sleepTimerDuration, setSleepTimerDuration] = useState<number | 'end-of-track' | null>(null);
 
   // Search History
   const [searchHistory, setSearchHistory] = useState<string[]>(() =>
@@ -529,6 +530,7 @@ export const App: React.FC = () => {
     if (sleepTimerEnd === -1) {
       if (isPlaying) handleTogglePlay();
       setSleepTimerEnd(null);
+      setSleepTimerDuration(null);
       showToast('🌙 Sleep timer finished - playback paused');
       return;
     }
@@ -717,6 +719,7 @@ export const App: React.FC = () => {
           handleTogglePlay();
         }
         setSleepTimerEnd(null);
+        setSleepTimerDuration(null);
         showToast('🌙 Sleep timer ended - playback paused');
       }
     }, 1000);
@@ -742,13 +745,16 @@ export const App: React.FC = () => {
   const handleSetSleepTimer = (val: number | 'end-of-track' | null) => {
     if (val === null) {
       setSleepTimerEnd(null);
+      setSleepTimerDuration(null);
       showToast('Sleep timer canceled');
     } else if (val === 'end-of-track') {
       setSleepTimerEnd(-1);
+      setSleepTimerDuration('end-of-track');
       showToast('Sleep timer set: pause at end of this song');
     } else {
       const endTime = Date.now() + val * 60000;
       setSleepTimerEnd(endTime);
+      setSleepTimerDuration(val);
       showToast(`Sleep timer set for ${val} minutes`);
     }
   };
@@ -795,6 +801,16 @@ export const App: React.FC = () => {
     const created = StorageService.createUserPlaylist(name, description);
     setUserPlaylists(StorageService.getUserPlaylists());
     showToast(`Created playlist "${name}"`);
+  };
+
+  const handleDeleteUserPlaylist = (playlistId: string) => {
+    const pl = userPlaylists.find((p) => p.id === playlistId);
+    StorageService.deleteUserPlaylist(playlistId);
+    setUserPlaylists(StorageService.getUserPlaylists());
+    if (selectedPlaylist?.id === playlistId) {
+      setSelectedPlaylist(null);
+    }
+    showToast(`Deleted playlist "${pl?.name || ''}"`);
   };
 
   const handleToggleTrackInPlaylist = (playlistId: string, trackId: string) => {
@@ -1036,6 +1052,7 @@ export const App: React.FC = () => {
           selectedPlaylistId={selectedPlaylist?.id || null}
           onSelectPlaylist={handleSelectPlaylist}
           onOpenCreatePlaylist={() => openModal(setIsCreatePlaylistOpen, 'create-playlist')}
+          onDeleteUserPlaylist={handleDeleteUserPlaylist}
           bassBoost={bassBoost}
           likedCount={likedIds.length}
           downloadCount={downloads.length}
@@ -1114,6 +1131,16 @@ export const App: React.FC = () => {
                       >
                         <Play className="w-4 h-4 fill-current" /> Play All
                       </button>
+                      {userPlaylists.some((p) => p.id === selectedPlaylist.id) && (
+                        <button
+                          onClick={() => handleDeleteUserPlaylist(selectedPlaylist.id)}
+                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-semibold border border-red-500/20 transition-all"
+                          title="Delete this custom playlist"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Delete Playlist</span>
+                        </button>
+                      )}
                       <span className="text-xs font-mono text-[var(--text-muted)]">
                         {displayedTracks.length} Songs
                       </span>
@@ -1504,6 +1531,7 @@ export const App: React.FC = () => {
         isOpen={isSleepTimerOpen}
         onClose={() => setIsSleepTimerOpen(false)}
         sleepTimerEnd={sleepTimerEnd}
+        sleepTimerDuration={sleepTimerDuration}
         onSetSleepTimer={handleSetSleepTimer}
         playbackSpeed={playbackSpeed}
         onSetPlaybackSpeed={handleSetPlaybackSpeed}
@@ -1522,6 +1550,9 @@ export const App: React.FC = () => {
         onEqBandChange={handleEqBandChange}
         activePresetId={activePresetId}
         onSelectPreset={handleSelectPreset}
+        isPlaying={isPlaying}
+        track={currentTrack}
+        currentTime={currentTime}
       />
 
       <LyricsModal

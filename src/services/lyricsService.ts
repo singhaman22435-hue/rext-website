@@ -170,6 +170,115 @@ const BUILTIN_FULL_LYRICS: Record<string, LyricLine[]> = {
     { time: 63.5, text: "Pain! Oh, let the bullets fly, oh, let them rain" },
     { time: 69, text: "My life, my love, my drive, it came from..." },
     { time: 73.5, text: "Pain! You made me a, you made me a believer, believer" }
+  ],
+
+  // Kesariya - Brahmāstra
+  'yt-BddP6PYo2gs': [
+    { time: 0, text: "🎵 (Music Intro)" },
+    { time: 14.5, text: "Mujhko itna bataye koi, kaise tujhse dil na lagaye koi" },
+    { time: 27.5, text: "Rabba ne tujhko banane mein, kardi hai husn ki khaali tijoriyan" },
+    { time: 41.5, text: "Kaajal ki siyahi se likhi, hai tune jaane kitno ki love storiyan" },
+    { time: 54, text: "Kesariya tera ishq hai piya, rang jaaun jo main haath lagaun" },
+    { time: 67, text: "Din beete saara teri fikr mein, rain saari teri khair manaun" },
+    { time: 80, text: "Kesariya tera ishq hai piya, rang jaaun jo main haath lagaun" },
+    { time: 93, text: "Din beete saara teri fikr mein, rain saari teri khair manaun" },
+    { time: 106.5, text: "Patjhad ke mausam mein bhi, rangi chanaaro jaisi" },
+    { time: 112.5, text: "Jhanke sannaato mein tu, veena ke taaron jaisi" },
+    { time: 119.5, text: "Sadiyon se bhi lambi yeh mann ki amavasein hain" },
+    { time: 125.5, text: "Barse tere aane se jyot phuharon jaisi" },
+    { time: 132, text: "Kesariya tera ishq hai piya, rang jaaun jo main haath lagaun" },
+    { time: 145, text: "Din beete saara teri fikr mein, rain saari teri khair manaun" }
+  ],
+
+  // BROWN MUNDE - AP Dhillon
+  'yt-VNs_cCtdbPc': [
+    { time: 0, text: "🎵 (G-Minxr on the beat)" },
+    { time: 14, text: "Desi jehe geet aa trap jehi beat aa" },
+    { time: 17, text: "Sirr kadd gajde speaker'an ch wajjde" },
+    { time: 20.5, text: "Brown Munde, Brown Munde" },
+    { time: 24, text: "Desi jehe geet aa trap jehi beat aa" },
+    { time: 27, text: "Sirr kadd gajde speaker'an ch wajjde" },
+    { time: 30.5, text: "Brown Munde, Brown Munde" },
+    { time: 34, text: "Gaddi lambi car te tezz raftaar" },
+    { time: 37, text: "Sada challe naam jivein chalda bazaar" },
+    { time: 40.5, text: "Ambran te chhaaye kaale baadal wangu" },
+    { time: 44, text: "Paunde ne khalare jivein aunde toofaan" },
+    { time: 48, text: "Ho shonki munde yaaran de, gaddiyan shingaar de" },
+    { time: 51, text: "Bharde ni mann pichhe kade ni haar de" },
+    { time: 54.5, text: "Desi jehe geet aa trap jehi beat aa" },
+    { time: 58, text: "Brown Munde, Brown Munde" }
+  ],
+
+  // 295 - Sidhu Moose Wala
+  'yt-n_FCrCQ6-bM': [
+    { time: 0, text: "🎵 (Yeah, Sidhu Moose Wala!)" },
+    { time: 12, text: "Dass kihda ae kasoor kide utte case kare" },
+    { time: 15.5, text: "Kihnu judge mann ke tu aivein aada la leya" },
+    { time: 19, text: "Aithe sab bikda ae aam janta de naal" },
+    { time: 22.5, text: "Dass sach bolne da ki nateeja pa leya" },
+    { time: 26, text: "Ni 295 je karega tarakki putt hate milugi" },
+    { time: 32.5, text: "Haunsla na chaddi kade aape rabb sunuga" },
+    { time: 39, text: "Ni 295 je karega tarakki putt hate milugi" },
+    { time: 45.5, text: "Karde salaaman kal jinna ne si goli maari" },
+    { time: 52, text: "Duniya da dastoor ehi chalda ae ethe" },
+    { time: 58.5, text: "Sach nu davauna jhooth aage aage langhda" }
+  ],
+
+  // Shape of You - Ed Sheeran
+  'yt-JGwWNGJdvx8': [
+    { time: 0, text: "🎵 (Club rhythm intro)" },
+    { time: 8, text: "The club isn't the best place to find a lover" },
+    { time: 11.5, text: "So the bar is where I go" },
+    { time: 14, text: "Me and my friends at the table doing shots" },
+    { time: 16.5, text: "Drinking fast and then we talk slow" },
+    { time: 20, text: "Come over and start up a conversation with just me" },
+    { time: 22.5, text: "And trust me I'll give it a chance now" },
+    { time: 25.5, text: "Take my hand, stop, put Van the Man on the jukebox" },
+    { time: 28, text: "And then we start to dance, and now I'm singing like" },
+    { time: 31, text: "Girl, you know I want your love" },
+    { time: 33, text: "Your love was handmade for somebody like me" },
+    { time: 36, text: "Come on now, follow my lead" },
+    { time: 38, text: "I may be crazy, don't mind me" },
+    { time: 40.5, text: "Say, boy, let's not talk too much" },
+    { time: 43, text: "Grab on my waist and put that body on me" },
+    { time: 46, text: "Come on now, follow my lead, come, come on now, follow my lead" },
+    { time: 51, text: "I'm in love with the shape of you" },
+    { time: 54, text: "We push and pull like a magnet do" },
+    { time: 57, text: "Although my heart is falling too, I'm in love with your body" }
+  ],
+
+  // Levitating - Dua Lipa
+  'yt-TUVcZfQe-Kw': [
+    { time: 0, text: "🎵 (Future Nostalgia beat)" },
+    { time: 8, text: "If you wanna run away with me, I know a galaxy" },
+    { time: 12, text: "And I can take you for a ride" },
+    { time: 16, text: "I had a premonition that we fell into a rhythm" },
+    { time: 20, text: "Where the music don't stop for life" },
+    { time: 24, text: "Glitter in the sky, glitter in my eyes" },
+    { time: 28, text: "Shining just the way I like" },
+    { time: 32, text: "If you're feeling like you need a little bit of company" },
+    { time: 36, text: "You met me at the perfect time" },
+    { time: 40, text: "You want me, I want you, baby" },
+    { time: 44, text: "My sugarboo, I'm levitating" },
+    { time: 48, text: "The Milky Way, we're renegading" },
+    { time: 52, text: "Yeah, yeah, yeah, yeah, yeah" }
+  ],
+
+  // Save Your Tears - The Weeknd
+  'yt-XXYlFuWEuKI': [
+    { time: 0, text: "🎵 (Synthesizer intro)" },
+    { time: 14, text: "I saw you dancing in a crowded room" },
+    { time: 20.5, text: "You look so happy when I'm not with you" },
+    { time: 27, text: "But then you saw me, caught you by surprise" },
+    { time: 33.5, text: "A single teardrop falling from your eye" },
+    { time: 40, text: "I don't know why I run away" },
+    { time: 47, text: "I'll make you cry when I run away" },
+    { time: 54, text: "You could've asked me why I broke your heart" },
+    { time: 60.5, text: "You could've told me that you fell apart" },
+    { time: 67, text: "But you walked past me like I wasn't there" },
+    { time: 73.5, text: "And just pretended like you didn't care" },
+    { time: 80, text: "Save your tears for another day" },
+    { time: 87, text: "Save your tears for another day" }
   ]
 };
 
@@ -378,6 +487,23 @@ export class LyricsService {
     try {
       localStorage.setItem(`${LYRICS_CACHE_PREFIX}${trackId}`, JSON.stringify(result));
     } catch {}
+  }
+
+  /**
+   * Search LRCLIB for lyrics with user search query
+   */
+  static async searchLyrics(query: string): Promise<LRCLibResponse[]> {
+    if (!query || !query.trim()) return [];
+    try {
+      const resp = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query.trim())}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        return Array.isArray(data) ? data : [];
+      }
+    } catch (e) {
+      console.warn('Manual lyrics search error:', e);
+    }
+    return [];
   }
 
   static saveCustomLyrics(trackId: string, lrcText: string): LyricsResult {

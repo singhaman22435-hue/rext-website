@@ -5,6 +5,7 @@ interface SleepTimerModalProps {
   isOpen: boolean;
   onClose: () => void;
   sleepTimerEnd: number | null; // timestamp in ms, or -1 for end of track
+  sleepTimerDuration?: number | 'end-of-track' | null;
   onSetSleepTimer: (minutes: number | 'end-of-track' | null) => void;
   playbackSpeed: number;
   onSetPlaybackSpeed: (speed: number) => void;
@@ -14,6 +15,7 @@ export const SleepTimerModal: React.FC<SleepTimerModalProps> = ({
   isOpen,
   onClose,
   sleepTimerEnd,
+  sleepTimerDuration,
   onSetSleepTimer,
   playbackSpeed,
   onSetPlaybackSpeed,
@@ -100,10 +102,13 @@ export const SleepTimerModal: React.FC<SleepTimerModalProps> = ({
                 }}
                 className={`p-2.5 rounded-xl text-xs font-semibold text-left transition-all ${
                   (opt.val === 'end-of-track' && sleepTimerEnd === -1) ||
+                  (sleepTimerDuration && sleepTimerDuration === opt.val) ||
                   (typeof opt.val === 'number' &&
                     sleepTimerEnd &&
                     sleepTimerEnd > 0 &&
-                    Math.abs(sleepTimerEnd - (Date.now() + opt.val * 60000)) < 30000)
+                    remainingMinutes !== null &&
+                    remainingMinutes > 0 &&
+                    Math.abs(sleepTimerEnd - (Date.now() + opt.val * 60000)) < 120000)
                     ? 'bg-indigo-600 text-white font-bold shadow-md'
                     : 'bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)]'
                 }`}

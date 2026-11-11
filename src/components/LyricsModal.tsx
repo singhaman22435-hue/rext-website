@@ -45,6 +45,7 @@ export const LyricsModal: React.FC<LyricsModalProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [showCustomEditor, setShowCustomEditor] = useState(false);
   const [customText, setCustomText] = useState('');
+  const [lyricOffset, setLyricOffset] = useState<number>(0);
 
   const activeLineRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -53,6 +54,7 @@ export const LyricsModal: React.FC<LyricsModalProps> = ({
   // Fetch lyrics when track changes or modal opens
   const loadLyrics = useCallback(async (currentTrack: Track) => {
     setIsLoading(true);
+    setLyricOffset(LyricsService.getLyricOffset(currentTrack.id));
     try {
       const res = await LyricsService.getLyrics(currentTrack);
       setLyricsData(res);
@@ -88,11 +90,12 @@ export const LyricsModal: React.FC<LyricsModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isImmersive, onClose]);
 
-  // Determine active lyric index
+  // Determine active lyric index with user sync offset
   const lyrics = lyricsData?.synced || track?.lyrics || [];
+  const adjustedCurrentTime = Math.max(0, currentTime + lyricOffset);
   let activeIndex = -1;
   for (let i = 0; i < lyrics.length; i++) {
-    if (currentTime >= lyrics[i].time) {
+    if (adjustedCurrentTime >= lyrics[i].time) {
       activeIndex = i;
     } else {
       break;

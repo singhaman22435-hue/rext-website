@@ -179,6 +179,11 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
     }
   }
 
+  // If before first lyric (intro), show preview of upcoming first line
+  if (activeIndex === -1 && lyrics.length > 0 && adjustedCurrentTime < lyrics[0].time) {
+    activeLyricText = `🎵 (Intro) • Up Next: "${lyrics[0].text}"`;
+  }
+
   // Smooth scroll active line in lyrics tab or video split view
   useEffect(() => {
     if ((activeTab === 'lyrics' || activeTab === 'video') && activeLineRef.current && lyricsContainerRef.current) {

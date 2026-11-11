@@ -454,9 +454,14 @@ class YouTubeEngine {
 
   public setVolume(volume0to1: number) {
     this.currentVolume = Math.round(Math.max(0, Math.min(1, volume0to1)) * 100);
-    if (this.player && typeof this.player.setVolume === 'function') {
+    if (this.player) {
       try {
-        this.player.setVolume(this.currentVolume);
+        if (this.currentVolume === 0) {
+          if (typeof this.player.mute === 'function') this.player.mute();
+        } else {
+          if (typeof this.player.unMute === 'function') this.player.unMute();
+          if (typeof this.player.setVolume === 'function') this.player.setVolume(this.currentVolume);
+        }
       } catch {}
     }
   }
