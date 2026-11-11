@@ -124,13 +124,6 @@ export const VibesView: React.FC<VibesViewProps> = ({
       setIsPlaying(true);
     }
 
-    // Attach video anchor if in video mode
-    if (visualMode === 'video' && videoAnchorRef.current) {
-      youtubeEngine.setAnchorElement(videoAnchorRef.current);
-    } else {
-      youtubeEngine.setAnchorElement(null);
-    }
-
     // Snippet progress ticker (loops 30s preview)
     const timer = setInterval(() => {
       if (!isMounted) return;
@@ -151,18 +144,27 @@ export const VibesView: React.FC<VibesViewProps> = ({
     return () => {
       isMounted = false;
       clearInterval(timer);
-      youtubeEngine.setAnchorElement(null);
     };
-  }, [activeTrack?.id, hookStartTime, visualMode]);
+  }, [activeTrack?.id, hookStartTime]);
 
-  // Sync anchor when switching to video mode
+  // Dedicated Visual Anchor Synchronization for 9:16 Vertical Video Mode
   useEffect(() => {
     if (visualMode === 'video' && videoAnchorRef.current) {
-      youtubeEngine.setAnchorElement(videoAnchorRef.current);
+      youtubeEngine.setAnchor(videoAnchorRef.current, 'vibes-view', true);
     } else {
-      youtubeEngine.setAnchorElement(null);
+      youtubeEngine.clearAnchor('vibes-view');
     }
-  }, [visualMode]);
+    return () => {
+      youtubeEngine.clearAnchor('vibes-view');
+    };
+  }, [visualMode, currentIndex, activeTrack?.id]);
+
+  // Cleanup on unmount of VibesView
+  useEffect(() => {
+    return () => {
+      youtubeEngine.clearAnchor('vibes-view');
+    };
+  }, []);
 
   // Navigation handlers
   const handleNext = useCallback(() => {
@@ -360,10 +362,15 @@ export const VibesView: React.FC<VibesViewProps> = ({
         <div
           ref={videoAnchorRef}
           id="rext-vibes-video-anchor"
-          className={`absolute inset-0 w-full h-full overflow-hidden transition-opacity duration-500 ${
+          className={`absolute inset-0 w-full h-full overflow-hidden transition-opacity duration-500 bg-black ${
             visualMode === 'video' ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
           }`}
-        />
+        >
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30 blur-md scale-110 pointer-events-none"
+            style={{ backgroundImage: `url(${activeTrack?.coverUrl})` }}
+          />
+        </div>
 
         {/* Layer 2: Spotify-Style Aesthetic Looping Video Canvas */}
         {visualMode === 'canvas' && (
@@ -570,3 +577,4 @@ export const VibesView: React.FC<VibesViewProps> = ({
     </div>
   );
 };
+

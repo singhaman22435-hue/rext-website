@@ -73,12 +73,12 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
   // Synchronize anchor element with YouTube engine when in video mode
   useEffect(() => {
     if (isOpen && activeTab === 'video' && videoAnchorRef.current) {
-      youtubeEngine.setAnchorElement(videoAnchorRef.current);
+      youtubeEngine.setAnchor(videoAnchorRef.current, 'fullscreen-player', false);
     } else if (!isOpen || activeTab !== 'video') {
-      youtubeEngine.setAnchorElement(null);
+      youtubeEngine.clearAnchor('fullscreen-player');
     }
     return () => {
-      youtubeEngine.setAnchorElement(null);
+      youtubeEngine.clearAnchor('fullscreen-player');
     };
   }, [isOpen, activeTab, track?.id]);
 

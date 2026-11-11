@@ -25,11 +25,11 @@ export const MiniVideoPlayer: React.FC<MiniVideoPlayerProps> = ({
 
   useEffect(() => {
     if (isVisible && anchorRef.current) {
-      youtubeEngine.setAnchorElement(anchorRef.current);
+      youtubeEngine.setAnchor(anchorRef.current, 'mini-video', false);
     }
     return () => {
       // Clear anchor when unmounted or hidden
-      youtubeEngine.setAnchorElement(null);
+      youtubeEngine.clearAnchor('mini-video');
     };
   }, [isVisible, currentTrack?.id]);
 

@@ -99,7 +99,9 @@ export const App: React.FC = () => {
   });
 
   // View & Navigation
-  const [currentView, setCurrentView] = useState<ViewType>('home');
+  const [currentView, setCurrentView] = useState<ViewType>(() => 
+    typeof window !== 'undefined' && window.location.hash === '#vibes' ? 'vibes' : 'home'
+  );
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -244,6 +246,13 @@ export const App: React.FC = () => {
     setSelectedPlaylist(null);
     setSearchQuery('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (view === 'vibes') {
+      window.location.hash = '#vibes';
+    } else if (window.location.hash === '#vibes') {
+      try {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch {}
+    }
   }, [currentView, selectedPlaylist, pushNavState]);
 
   const handleSelectPlaylist = useCallback((pl: Playlist) => {
