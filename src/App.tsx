@@ -45,6 +45,8 @@ import { ShortcutsModal } from './components/ShortcutsModal';
 import { ImportAudioModal } from './components/ImportAudioModal';
 import { PremiumUpgradeModal } from './components/PremiumUpgradeModal';
 import { InstallAppModal } from './components/InstallAppModal';
+import { MobileNav } from './components/MobileNav';
+import { MobileLibraryDrawer } from './components/MobileLibraryDrawer';
 import { proService } from './services/proService';
 
 import {
@@ -123,6 +125,7 @@ export const App: React.FC = () => {
   const [isProUser, setIsProUser] = useState(() => proService.isPro());
   const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
   useEffect(() => {
@@ -161,6 +164,16 @@ export const App: React.FC = () => {
     const next = !isVideoVisible;
     setIsVideoVisible(next);
     youtubeEngine.setVideoVisibility(next);
+  };
+
+  const handleFocusSearch = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      const input = document.querySelector('header input[type="text"]') as HTMLInputElement;
+      if (input) {
+        input.focus();
+      }
+    }, 100);
   };
 
   // Apply Theme & Font dynamically
@@ -548,7 +561,7 @@ export const App: React.FC = () => {
       {/* Startup Splash */}
       {showSplash && <SplashScreen onLoaded={() => setShowSplash(false)} />}
 
-      <div className="flex flex-1 pb-24 md:pb-28">
+      <div className="flex flex-1 pb-40 sm:pb-32 md:pb-28">
         {/* Left Sidebar */}
         <div className="hidden md:flex">
           <Sidebar
@@ -608,6 +621,7 @@ export const App: React.FC = () => {
             onFontChange={handleFontChange}
             isPro={isProUser}
             onOpenProModal={() => setIsProModalOpen(true)}
+            onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
           />
 
           <div className="flex-1 p-4 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
@@ -1029,6 +1043,43 @@ export const App: React.FC = () => {
         onClose={() => setIsInstallModalOpen(false)}
         installPrompt={installPrompt}
         onTriggerInstall={handleTriggerInstall}
+      />
+
+      {/* Mobile Bottom Navigation Bar (< md screens) */}
+      <MobileNav
+        currentView={currentView}
+        onNavigate={(view) => {
+          setCurrentView(view);
+          setSelectedPlaylist(null);
+          setSearchQuery('');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        likedCount={likedIds.length}
+        downloadCount={downloads.length}
+        onOpenBassLab={() => setIsBassLabOpen(true)}
+        onOpenLibraryDrawer={() => setIsMobileDrawerOpen(true)}
+        onFocusSearch={handleFocusSearch}
+      />
+
+      {/* Mobile Library & Settings Drawer */}
+      <MobileLibraryDrawer
+        isOpen={isMobileDrawerOpen}
+        onClose={() => setIsMobileDrawerOpen(false)}
+        playlists={FEATURED_PLAYLISTS}
+        selectedPlaylistId={selectedPlaylist?.id || null}
+        onSelectPlaylist={(pl) => {
+          setSelectedPlaylist(pl);
+          setCurrentView('home');
+          setSearchQuery('');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        currentTheme={currentTheme}
+        onThemeChange={handleThemeChange}
+        currentFont={currentFont}
+        onFontChange={handleFontChange}
+        onOpenImport={() => setIsImportOpen(true)}
+        isPro={isProUser}
+        onOpenProModal={() => setIsProModalOpen(true)}
       />
     </div>
   );

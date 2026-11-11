@@ -61,11 +61,19 @@ class YouTubeEngine {
   }
 
   private applyContainerStyles(container: HTMLElement) {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
     container.style.position = 'fixed';
-    container.style.bottom = '96px';
-    container.style.right = '24px';
-    container.style.width = '320px';
-    container.style.height = '180px';
+    if (isMobile) {
+      container.style.bottom = '130px';
+      container.style.right = '12px';
+      container.style.width = '180px';
+      container.style.height = '101px';
+    } else {
+      container.style.bottom = '96px';
+      container.style.right = '24px';
+      container.style.width = '320px';
+      container.style.height = '180px';
+    }
     container.style.borderRadius = '16px';
     container.style.overflow = 'hidden';
     container.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4)';

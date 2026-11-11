@@ -13,7 +13,10 @@ import {
   Moon,
   ChevronDown,
   Crown,
-  Download
+  Download,
+  Menu,
+  Music2,
+  Sparkles
 } from 'lucide-react';
 import { GENRES } from '../services/musicCatalog';
 import { ThemeMode, FontStyle } from '../types';
@@ -35,13 +38,14 @@ interface NavbarProps {
   onFontChange: (font: FontStyle) => void;
   isPro?: boolean;
   onOpenProModal?: () => void;
+  onOpenMobileDrawer?: () => void;
 }
 
 const THEMES: { id: ThemeMode; label: string; icon: React.ReactNode; colorPill: string }[] = [
-  { id: 'warmer', label: 'Warm Cashmere (Light)', icon: <Coffee className="w-3.5 h-3.5" />, colorPill: '#F7F4EE' },
-  { id: 'sunset', label: 'Honey Sunset (Warm)', icon: <Sun className="w-3.5 h-3.5" />, colorPill: '#FDF6EE' },
-  { id: 'cold', label: 'Cold Frost (Slate)', icon: <Snowflake className="w-3.5 h-3.5" />, colorPill: '#F1F5F9' },
-  { id: 'mocha', label: 'Velvet Mocha (Dark)', icon: <Moon className="w-3.5 h-3.5" />, colorPill: '#1A1614' },
+  { id: 'warmer', label: 'Cashmere Light', icon: <Coffee className="w-3.5 h-3.5" />, colorPill: '#F7F4EE' },
+  { id: 'sunset', label: 'Sunset Warm', icon: <Sun className="w-3.5 h-3.5" />, colorPill: '#FDF6EE' },
+  { id: 'cold', label: 'Cold Frost', icon: <Snowflake className="w-3.5 h-3.5" />, colorPill: '#F1F5F9' },
+  { id: 'mocha', label: 'Velvet Mocha', icon: <Moon className="w-3.5 h-3.5" />, colorPill: '#1A1614' },
 ];
 
 const FONTS: { id: FontStyle; label: string }[] = [
@@ -69,6 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onFontChange,
   isPro = false,
   onOpenProModal,
+  onOpenMobileDrawer,
 }) => {
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
@@ -78,10 +83,69 @@ export const Navbar: React.FC<NavbarProps> = ({
   const activeFontObj = FONTS.find((f) => f.id === currentFont) || FONTS[0];
 
   return (
-    <header className="sticky top-0 z-30 bg-[var(--bg-main)]/90 backdrop-blur-xl border-b border-[var(--border-color)] px-4 md:px-8 py-3 space-y-3 transition-colors duration-300">
+    <header className="sticky top-0 z-30 bg-[var(--bg-main)]/95 backdrop-blur-xl border-b border-[var(--border-color)] px-3 sm:px-6 md:px-8 py-2.5 sm:py-3 space-y-2.5 transition-colors duration-300">
+      {/* Mobile Brand Bar (Visible only on < md screens) */}
+      <div className="flex md:hidden items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-[var(--accent-orange)] text-white flex items-center justify-center font-black text-base shadow-sm">
+            r
+          </div>
+          <span className="font-black text-lg tracking-tight text-[var(--text-main)]">
+            rext
+          </span>
+          {isPro && (
+            <span className="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-400 font-mono text-[9px] font-extrabold uppercase">
+              PRO
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {/* Quick Equalizer Button */}
+          <button
+            onClick={onOpenBassLab}
+            className="flex items-center gap-1 px-2.5 py-1.5 min-h-[38px] rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-main)] shadow-xs"
+            aria-label="Equalizer"
+          >
+            <Sliders className="w-3.5 h-3.5 text-[var(--accent-orange)]" />
+            <span className="font-mono text-[11px] font-bold text-[var(--accent-orange)]">
+              +{bassBoost}dB
+            </span>
+          </button>
+
+          {/* Pro Modal */}
+          {onOpenProModal && (
+            <button
+              onClick={onOpenProModal}
+              className={`min-h-[38px] px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 shadow-xs ${
+                isPro
+                  ? 'bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                  : 'bg-gradient-to-r from-[var(--accent-orange)] to-amber-500 text-white border-transparent'
+              }`}
+              aria-label="Pro Membership"
+            >
+              <Crown className="w-3.5 h-3.5 fill-current" />
+              <span>{isPro ? 'Pro' : 'Get Pro'}</span>
+            </button>
+          )}
+
+          {/* Mobile Drawer Toggle */}
+          {onOpenMobileDrawer && (
+            <button
+              onClick={onOpenMobileDrawer}
+              className="min-w-[38px] min-h-[38px] flex items-center justify-center rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] shadow-xs"
+              aria-label="Open Menu & Library"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Main Search & Desktop Controls Row */}
       <div className="flex items-center justify-between gap-3">
-        {/* Search Bar */}
-        <div className="relative flex-1 max-w-xl">
+        {/* Search Bar (Full width on mobile, constrained on desktop) */}
+        <div className="relative flex-1 max-w-2xl">
           <div className="relative flex items-center">
             <Search className="absolute left-3.5 w-4 h-4 text-[var(--text-muted)] pointer-events-none" />
             <input
@@ -89,21 +153,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search any song from YouTube (e.g. Starboy, Kesariya, Brown Munde, SICKO MODE)..."
-              className="w-full pl-10 pr-24 py-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-sm text-[var(--text-main)] placeholder-[var(--text-sub)] focus:outline-none focus:border-[var(--accent-orange)] focus:ring-1 focus:ring-[var(--accent-orange)] transition-all shadow-sm"
+              placeholder="Search any song, artist, YouTube stream..."
+              className="w-full pl-10 pr-20 py-2 sm:py-2.5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-sub)] focus:outline-none focus:border-[var(--accent-orange)] focus:ring-1 focus:ring-[var(--accent-orange)] transition-all shadow-xs"
             />
             {/* Clear Button / Shortcut badge */}
             <div className="absolute right-3 flex items-center gap-1.5">
               {searchQuery ? (
                 <button
                   onClick={() => onSearchChange('')}
-                  className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)]"
+                  className="min-w-[28px] min-h-[28px] flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)]"
                   title="Clear search"
+                  aria-label="Clear search"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               ) : (
-                <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 border border-[var(--border-color)] text-[10px] font-mono text-[var(--text-muted)]">
+                <kbd className="hidden md:inline-block px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 border border-[var(--border-color)] text-[10px] font-mono text-[var(--text-muted)]">
                   Ctrl+K
                 </kbd>
               )}
@@ -114,8 +179,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Right Controls */}
-        <div className="flex items-center gap-2">
+        {/* Desktop Controls (Hidden on mobile to keep search bar wide) */}
+        <div className="hidden md:flex items-center gap-2">
           {/* Theme Dropdown */}
           <div className="relative">
             <button
@@ -123,19 +188,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setShowThemeMenu(!showThemeMenu);
                 setShowFontMenu(false);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] transition-colors shadow-xs"
               title="Change Background Tone"
             >
               <span
                 className="w-3 h-3 rounded-full border border-black/15 dark:border-white/20 shrink-0"
                 style={{ backgroundColor: activeThemeObj.colorPill }}
               />
-              <span className="hidden sm:inline">{activeThemeObj.label.split(' ')[0]}</span>
+              <span>{activeThemeObj.label.split(' ')[0]}</span>
               <ChevronDown className="w-3 h-3 text-[var(--text-muted)]" />
             </button>
 
             {showThemeMenu && (
-              <div className="absolute right-0 top-10 w-52 p-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl z-50 space-y-1 animate-slide-up">
+              <div className="absolute right-0 top-11 w-52 p-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl z-50 space-y-1 animate-slide-up">
                 <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-sub)]">
                   Background Tone
                 </div>
@@ -154,7 +219,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       <span
-                        className="w-3.5 h-3.5 rounded-full border border-black/15 shadow-sm"
+                        className="w-3.5 h-3.5 rounded-full border border-black/15 shadow-xs"
                         style={{ backgroundColor: theme.colorPill }}
                       />
                       <span>{theme.label}</span>
@@ -172,7 +237,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setShowFontMenu(!showFontMenu);
                 setShowThemeMenu(false);
               }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] transition-colors shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] transition-colors shadow-xs"
               title="Change Font Style"
             >
               <Type className="w-3.5 h-3.5 text-[var(--text-muted)]" />
@@ -181,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {showFontMenu && (
-              <div className="absolute right-0 top-10 w-44 p-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl z-50 space-y-1 animate-slide-up">
+              <div className="absolute right-0 top-11 w-44 p-2 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl z-50 space-y-1 animate-slide-up">
                 <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-sub)]">
                   Font Family
                 </div>
@@ -209,7 +274,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenProModal && (
             <button
               onClick={onOpenProModal}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-bold transition-all shadow-xs ${
                 isPro
                   ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400'
                   : 'bg-gradient-to-r from-[var(--accent-orange)] to-amber-500 text-white border-transparent hover:opacity-95'
@@ -217,18 +282,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Rext Pro Membership"
             >
               <Crown className="w-3.5 h-3.5 fill-current" />
-              <span className="hidden sm:inline">{isPro ? 'Pro Active' : 'Get Pro'}</span>
+              <span>{isPro ? 'Pro Active' : 'Get Pro'}</span>
             </button>
           )}
 
           {/* Equalizer & Bass Shortcut Button */}
           <button
             onClick={onOpenBassLab}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] shadow-xs transition-colors"
             title="Audio Equalizer & Bass"
           >
             <Sliders className="w-3.5 h-3.5 text-[var(--accent-orange)]" />
-            <span className="hidden sm:inline">Equalizer</span>
+            <span>Equalizer</span>
             {bassBoost > 0 && (
               <span className="px-1.5 py-0.2 rounded-md bg-[var(--accent-orange)] text-white font-mono text-[10px] font-bold">
                 +{bassBoost}dB
@@ -239,7 +304,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Downloads Vault Button */}
           <button
             onClick={onOpenDownloads}
-            className="relative p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-blue)] text-[var(--text-main)] shadow-sm transition-colors"
+            className="relative p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-blue)] text-[var(--text-main)] shadow-xs transition-colors"
             title="Downloads"
           >
             <HardDrive className="w-4 h-4 text-[var(--accent-blue)]" />
@@ -253,7 +318,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Keyboard Shortcuts */}
           <button
             onClick={onOpenShortcuts}
-            className="hidden md:flex p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--border-color)]/80 text-[var(--text-muted)] hover:text-[var(--text-main)] shadow-sm transition-colors"
+            className="p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--border-color)]/80 text-[var(--text-muted)] hover:text-[var(--text-main)] shadow-xs transition-colors"
             title="Keyboard Shortcuts"
           >
             <Keyboard className="w-4 h-4" />
@@ -262,16 +327,16 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Genre Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar -mx-3 sm:mx-0 px-3 sm:px-0">
         {GENRES.map((genre) => {
           const isActive = selectedGenre === genre.id;
           return (
             <button
               key={genre.id}
               onClick={() => onSelectGenre(genre.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 min-h-[34px] flex items-center ${
                 isActive
-                  ? 'bg-[var(--accent-orange)] text-white shadow-sm'
+                  ? 'bg-[var(--accent-orange)] text-white shadow-xs'
                   : 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
               }`}
             >
