@@ -37,7 +37,7 @@ export const MiniVideoPlayer: React.FC<MiniVideoPlayerProps> = ({
 
   return (
     <div
-      className="fixed bottom-24 right-4 sm:bottom-28 sm:right-6 z-40 w-64 sm:w-80 aspect-video rounded-2xl overflow-hidden border-2 border-[var(--border-color)] bg-black shadow-2xl shadow-black/60 group animate-slide-up select-none"
+      className="hidden sm:block fixed bottom-28 right-6 z-[60] w-72 sm:w-80 aspect-video rounded-2xl overflow-hidden border-2 border-[var(--border-color)] bg-black shadow-2xl shadow-black/70 group animate-slide-up select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(true)}
@@ -49,15 +49,23 @@ export const MiniVideoPlayer: React.FC<MiniVideoPlayerProps> = ({
         className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden pointer-events-none bg-neutral-900"
       />
 
+      {/* Paused Poster Shield: 100% covers YouTube default red play button and channel name */}
+      {!isPlaying && (
+        <div
+          className="absolute inset-0 z-[61] bg-cover bg-center opacity-60 blur-[1px] pointer-events-none scale-105 transition-opacity duration-300"
+          style={{ backgroundImage: `url(${currentTrack.coverUrl})` }}
+        />
+      )}
+
       {/* REXT Native Glass Overlay - captures all user interactions */}
       <div
         onClick={onTogglePlay}
-        className={`absolute inset-0 z-55 flex flex-col justify-between p-2.5 transition-all duration-300 cursor-pointer ${
+        className={`absolute inset-0 z-[62] flex flex-col justify-between p-2.5 transition-all duration-300 cursor-pointer ${
           !isPlaying
-            ? 'opacity-100 bg-black/85 backdrop-blur-sm'
+            ? 'opacity-100 bg-black/75 backdrop-blur-sm'
             : isHovered
-            ? 'opacity-100 bg-gradient-to-t from-black/80 via-transparent to-black/60'
-            : 'opacity-0 md:opacity-0 hover:opacity-100 bg-gradient-to-t from-black/80 via-transparent to-black/60'
+            ? 'opacity-100 bg-gradient-to-t from-black/85 via-transparent to-black/60'
+            : 'opacity-0 hover:opacity-100 bg-gradient-to-t from-black/85 via-transparent to-black/60'
         }`}
       >
         {/* Top Header Bar */}

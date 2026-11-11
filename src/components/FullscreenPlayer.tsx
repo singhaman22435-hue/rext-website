@@ -313,6 +313,14 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
                 className="absolute inset-0 w-full h-full rounded-3xl overflow-hidden pointer-events-none bg-neutral-950"
               />
 
+              {/* Paused Poster Shield: 100% covers YouTube default red play button and channel name */}
+              {!isPlaying && (
+                <div
+                  className="absolute inset-0 z-[59] bg-cover bg-center opacity-60 blur-xs pointer-events-none scale-105 transition-opacity duration-300"
+                  style={{ backgroundImage: `url(${track.coverUrl})` }}
+                />
+              )}
+
               {/* REXT Custom Interactive Glass Overlay (Captures clicks, zero YouTube branding) */}
               <div
                 onClick={onTogglePlay}
@@ -327,7 +335,7 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
                     triggerSeekNotice('+10s');
                   }
                 }}
-                className={`absolute inset-0 z-55 flex flex-col justify-between p-3.5 sm:p-5 transition-all duration-300 cursor-pointer ${
+                className={`absolute inset-0 z-[60] flex flex-col justify-between p-3.5 sm:p-5 transition-all duration-300 cursor-pointer ${
                   !isPlaying
                     ? 'opacity-100 bg-black/85 backdrop-blur-sm'
                     : 'opacity-0 hover:opacity-100 focus-within:opacity-100 bg-gradient-to-t from-black/80 via-transparent to-black/60'

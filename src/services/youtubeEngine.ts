@@ -319,7 +319,8 @@ class YouTubeEngine {
     container.style.height = `${height}px`;
     container.style.borderRadius = computed.borderRadius || '16px';
     container.style.overflow = 'hidden';
-    container.style.zIndex = '53'; // Just above theater/vibes surface (z-50)
+    // Coordinate z-index: underneath REXT native overlays (z-[60]+) so YouTube controls/branding are physically blocked
+    container.style.zIndex = this.activeOwnerId === 'mini-video' ? '60' : '52';
     container.style.opacity = '1';
     container.style.pointerEvents = 'none'; // Critical: all touches/clicks pass to REXT custom overlays
     container.style.visibility = 'visible';

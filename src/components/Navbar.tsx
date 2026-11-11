@@ -122,38 +122,39 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-30 bg-[var(--bg-card)]/80 backdrop-blur-2xl border-b border-[var(--border-color)] px-3 sm:px-6 py-2.5 sm:py-3 space-y-2.5 transition-colors duration-300">
       {/* Top Mobile Brand Bar */}
-      <div className="flex items-center justify-between md:hidden">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-[var(--accent-orange)] to-[var(--accent-blue)] flex items-center justify-center font-black text-white text-xs shadow-md">
+      <div className="flex items-center justify-between gap-1.5 md:hidden w-full overflow-hidden select-none">
+        {/* Brand */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-r from-[var(--accent-orange)] to-[var(--accent-blue)] flex items-center justify-center font-black text-white text-xs shadow-xs shrink-0">
             R
           </div>
-          <div>
-            <h1 className="text-sm font-black tracking-tight text-[var(--text-main)] flex items-center gap-1">
-              rext <span className="text-[10px] text-[var(--accent-orange)] font-mono font-bold">PRO</span>
-            </h1>
-          </div>
+          <h1 className="text-sm font-black tracking-tight text-[var(--text-main)] flex items-center gap-1 shrink-0 whitespace-nowrap">
+            rext <span className="text-[10px] text-[var(--accent-orange)] font-mono font-bold">PRO</span>
+          </h1>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        {/* Action Controls */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           {onOpenVibes && (
             <button
               onClick={onOpenVibes}
-              className="flex items-center gap-1 px-2.5 py-1.5 min-h-[36px] rounded-xl bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 min-h-[32px] sm:min-h-[36px] rounded-xl bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold text-[11px] sm:text-xs shadow-xs active:scale-95 transition-all shrink-0 whitespace-nowrap"
               title="REXT Vibes"
               aria-label="REXT Vibes"
             >
-              <Flame className="w-3.5 h-3.5 fill-current" />
+              <Flame className="w-3.5 h-3.5 fill-current shrink-0" />
               <span>Vibes</span>
             </button>
           )}
 
           <button
             onClick={onOpenBassLab}
-            className="flex items-center gap-1 px-2.5 py-1.5 min-h-[36px] rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-main)] shadow-xs"
+            className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 sm:py-1.5 min-h-[32px] sm:min-h-[36px] rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[11px] sm:text-xs font-semibold text-[var(--text-main)] shadow-xs shrink-0 whitespace-nowrap"
             aria-label="Equalizer"
+            title="Sub-Bass Equalizer"
           >
-            <Sliders className="w-3.5 h-3.5 text-[var(--accent-orange)]" />
-            <span className="font-mono text-[11px] font-bold text-[var(--accent-orange)]">
+            <Sliders className="w-3.5 h-3.5 text-[var(--accent-orange)] shrink-0" />
+            <span className="font-mono text-[10px] sm:text-[11px] font-bold text-[var(--accent-orange)]">
               +{bassBoost}dB
             </span>
           </button>
@@ -161,25 +162,26 @@ export const Navbar: React.FC<NavbarProps> = ({
           {onOpenProModal && (
             <button
               onClick={onOpenProModal}
-              className={`min-h-[36px] px-2.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1 shadow-xs ${
+              className={`min-h-[32px] sm:min-h-[36px] px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold flex items-center gap-1 shadow-xs shrink-0 whitespace-nowrap ${
                 isPro
                   ? 'bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400'
                   : 'bg-gradient-to-r from-[var(--accent-orange)] to-amber-500 text-white border-transparent'
               }`}
               aria-label="Pro Membership"
+              title="Pro Membership"
             >
-              <Crown className="w-3.5 h-3.5 fill-current" />
-              <span>{isPro ? 'Pro' : 'Get Pro'}</span>
+              <Crown className="w-3.5 h-3.5 fill-current shrink-0" />
+              <span className="hidden min-[380px]:inline">{isPro ? 'Pro' : 'Get Pro'}</span>
             </button>
           )}
 
           {onOpenMobileDrawer && (
             <button
               onClick={onOpenMobileDrawer}
-              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] shadow-xs"
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] shadow-xs shrink-0"
               aria-label="Open Menu & Library"
             >
-              <Menu className="w-4 h-4" />
+              <Menu className="w-4 h-4 shrink-0" />
             </button>
           )}
         </div>
@@ -224,7 +226,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Search History & Trending Suggestions Floating Card */}
           {isSearchFocused && !searchQuery && (
-            <div className="absolute left-0 right-0 top-12 p-3 rounded-2xl bg-[var(--bg-card)]/95 backdrop-blur-2xl border border-[var(--border-color)] shadow-2xl z-50 space-y-3 animate-slide-up">
+            <div
+              className="absolute left-0 right-0 top-12 p-3.5 sm:p-4 rounded-2xl border border-[var(--border-color)] shadow-2xl z-50 space-y-3 animate-slide-up"
+              style={{
+                backgroundColor: 'var(--bg-card, #ffffff)',
+                boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--border-color)'
+              }}
+            >
               {/* Recent Searches */}
               {searchHistory.length > 0 && (
                 <div className="space-y-1.5">
