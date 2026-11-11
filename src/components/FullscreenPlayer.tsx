@@ -327,8 +327,10 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
                     triggerSeekNotice('+10s');
                   }
                 }}
-                className={`absolute inset-0 z-55 flex flex-col justify-between p-3.5 sm:p-5 bg-gradient-to-t from-black/80 via-transparent to-black/60 transition-opacity duration-300 cursor-pointer ${
-                  !isPlaying ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus-within:opacity-100'
+                className={`absolute inset-0 z-55 flex flex-col justify-between p-3.5 sm:p-5 transition-all duration-300 cursor-pointer ${
+                  !isPlaying
+                    ? 'opacity-100 bg-black/85 backdrop-blur-sm'
+                    : 'opacity-0 hover:opacity-100 focus-within:opacity-100 bg-gradient-to-t from-black/80 via-transparent to-black/60'
                 }`}
               >
                 {/* Top Badges */}

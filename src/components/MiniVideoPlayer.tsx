@@ -52,8 +52,12 @@ export const MiniVideoPlayer: React.FC<MiniVideoPlayerProps> = ({
       {/* REXT Native Glass Overlay - captures all user interactions */}
       <div
         onClick={onTogglePlay}
-        className={`absolute inset-0 z-55 flex flex-col justify-between p-2.5 bg-gradient-to-t from-black/80 via-transparent to-black/60 transition-opacity duration-300 cursor-pointer ${
-          isHovered || !isPlaying ? 'opacity-100' : 'opacity-0 md:opacity-0 hover:opacity-100'
+        className={`absolute inset-0 z-55 flex flex-col justify-between p-2.5 transition-all duration-300 cursor-pointer ${
+          !isPlaying
+            ? 'opacity-100 bg-black/85 backdrop-blur-sm'
+            : isHovered
+            ? 'opacity-100 bg-gradient-to-t from-black/80 via-transparent to-black/60'
+            : 'opacity-0 md:opacity-0 hover:opacity-100 bg-gradient-to-t from-black/80 via-transparent to-black/60'
         }`}
       >
         {/* Top Header Bar */}

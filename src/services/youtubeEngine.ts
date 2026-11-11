@@ -124,6 +124,7 @@ class YouTubeEngine {
         height: '100%',
         width: '100%',
         videoId: initialVideoId,
+        host: 'https://www.youtube-nocookie.com',
         playerVars: {
           autoplay: this.queuedVideoId ? 1 : 0,
           controls: 0,             // Zero native YouTube controls
@@ -333,8 +334,8 @@ class YouTubeEngine {
         iframe.style.position = 'absolute';
         iframe.style.top = '50%';
         iframe.style.left = '50%';
-        iframe.style.width = '350%';
-        iframe.style.height = '100%';
+        iframe.style.width = '380%';
+        iframe.style.height = '125%';
         iframe.style.maxWidth = 'none';
         iframe.style.maxHeight = 'none';
         iframe.style.transform = 'translate(-50%, -50%)';
@@ -342,16 +343,16 @@ class YouTubeEngine {
         iframe.style.pointerEvents = 'none';
         iframe.style.border = 'none';
       } else {
-        // Standard 16:9 Theater & Mini Player Mode:
-        // Scale 1.16x to hide top YouTube title bar and bottom watermark
+        // Standard 16:9 Cinema Studio & Mini Player Mode:
+        // Scale 1.36x so top YouTube title bar and bottom YouTube watermark/logo are cropped off outside the container's rounded overflow-hidden box!
         iframe.style.position = 'absolute';
-        iframe.style.top = '0';
-        iframe.style.left = '0';
+        iframe.style.top = '50%';
+        iframe.style.left = '50%';
         iframe.style.width = '100%';
         iframe.style.height = '100%';
-        iframe.style.maxWidth = '100%';
-        iframe.style.maxHeight = '100%';
-        iframe.style.transform = 'scale(1.16)';
+        iframe.style.maxWidth = 'none';
+        iframe.style.maxHeight = 'none';
+        iframe.style.transform = 'translate(-50%, -50%) scale(1.36)';
         iframe.style.transformOrigin = 'center center';
         iframe.style.pointerEvents = 'none';
         iframe.style.border = 'none';

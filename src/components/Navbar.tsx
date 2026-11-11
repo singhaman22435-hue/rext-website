@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               value={searchQuery}
               onFocus={() => setIsSearchFocused(true)}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search any song, artist, YouTube stream..."
+              placeholder="Search 100M+ songs, artists, albums, or paste link..."
               className="w-full pl-10 pr-20 py-2 sm:py-2.5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-sub)] focus:outline-none focus:border-[var(--accent-orange)] focus:ring-1 focus:ring-[var(--accent-orange)] transition-all shadow-xs"
             />
             {/* Clear Button / Shortcut badge */}

@@ -33,15 +33,15 @@ export const ImportAudioModal: React.FC<ImportAudioModalProps> = ({
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) {
-      setError('Please enter a valid YouTube or audio URL');
+      setError('Please enter a valid audio or stream URL');
       return;
     }
 
     const ytId = extractYouTubeId(url.trim());
 
     if (ytId) {
-      const cleanTitle = sanitizeText(title.trim(), 80) || 'YouTube Music Track';
-      const cleanArtist = sanitizeText(artist.trim(), 60) || 'YouTube Artist';
+      const cleanTitle = sanitizeText(title.trim(), 80) || 'Studio Master Track';
+      const cleanArtist = sanitizeText(artist.trim(), 60) || 'Studio Master Artist';
 
       const newTrack: Track = {
         id: `yt-${ytId}`,
@@ -49,12 +49,12 @@ export const ImportAudioModal: React.FC<ImportAudioModalProps> = ({
         source: 'youtube',
         title: cleanTitle,
         artist: cleanArtist,
-        album: 'YouTube Stream',
+        album: 'Studio Master Stream',
         coverUrl: `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
         audioUrl: `https://www.youtube.com/watch?v=${ytId}`,
         duration: 220,
-        genre: 'YouTube',
-        bitrate: 'YouTube HQ Audio',
+        genre: 'Pop',
+        bitrate: '320 kbps Master',
         year: new Date().getFullYear(),
         bassLevel: 85,
         plays: 500000,
@@ -149,7 +149,7 @@ export const ImportAudioModal: React.FC<ImportAudioModalProps> = ({
             }`}
           >
             <Link2 className="w-3.5 h-3.5" />
-            YouTube / Audio URL
+            Paste Audio / Video URL
           </button>
           <button
             onClick={() => setActiveTab('file')}
@@ -166,10 +166,10 @@ export const ImportAudioModal: React.FC<ImportAudioModalProps> = ({
           <form onSubmit={handleUrlSubmit} className="space-y-3.5">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-[var(--text-main)] flex items-center justify-between">
-                <span>YouTube Link or Audio URL</span>
+                <span>Stream Link or Audio URL</span>
                 {detectedYtId && (
-                  <span className="text-[10px] text-red-500 font-bold flex items-center gap-1">
-                    <YoutubeIcon className="w-3.5 h-3.5" /> YouTube Video Detected
+                  <span className="text-[10px] text-[var(--accent-orange)] font-bold flex items-center gap-1">
+                    <Music2 className="w-3.5 h-3.5" /> HD Audio Stream Detected
                   </span>
                 )}
               </label>
@@ -183,7 +183,7 @@ export const ImportAudioModal: React.FC<ImportAudioModalProps> = ({
                     setUrl(e.target.value);
                     setError('');
                   }}
-                  placeholder="https://www.youtube.com/watch?v=... or .mp3 link"
+                  placeholder="Paste any music link or .mp3 URL..."
                   className="w-full pl-9 pr-3 py-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-xs text-[var(--text-main)] placeholder-[var(--text-sub)] focus:outline-none focus:border-[var(--accent-orange)]"
                 />
               </div>
@@ -193,12 +193,12 @@ export const ImportAudioModal: React.FC<ImportAudioModalProps> = ({
               <div className="flex items-center gap-3 p-2 rounded-xl bg-[var(--bg-surface-hover)] border border-[var(--border-color)]">
                 <img
                   src={`https://i.ytimg.com/vi/${detectedYtId}/hqdefault.jpg`}
-                  alt="YouTube thumbnail"
+                  alt="Track artwork"
                   className="w-16 h-10 object-cover rounded-lg"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-[var(--text-main)] truncate">YouTube Video Ready</p>
-                  <p className="text-[10px] text-[var(--text-muted)] font-mono">ID: {detectedYtId}</p>
+                  <p className="text-xs font-bold text-[var(--text-main)] truncate">High-Res Stream Ready</p>
+                  <p className="text-[10px] text-[var(--text-muted)] font-mono">Lossless Audio Pipeline</p>
                 </div>
               </div>
             )}

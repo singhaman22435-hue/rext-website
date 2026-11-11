@@ -104,7 +104,7 @@ export const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({
             </div>
             <h4 className="text-lg font-bold text-[var(--text-main)]">You Are a Rext Pro Member!</h4>
             <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
-              Your license is active on this device. You have full access to 18dB Bass Boost, Unlimited Downloads, and YouTube Video streaming.
+              Your license is active on this device. You have full access to 18dB Bass Boost, Unlimited Downloads, and 1080p Cinema Video streaming.
             </p>
             <div className="text-xs font-mono text-[var(--text-sub)]">
               License: <span className="font-bold text-[var(--text-main)]">{proService.getLicenseKey() || 'VIP-LIFETIME'}</span>

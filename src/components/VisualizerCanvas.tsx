@@ -32,6 +32,11 @@ export const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
   const peakBarsRef = useRef<number[]>(new Array(36).fill(4));
   const peakDecayRef = useRef<number[]>(new Array(36).fill(0));
 
+  // Track musical parameters
+  const bpm = track?.bpm || (track?.genre === 'Phonk' ? 160 : track?.genre === 'Hip-Hop' ? 135 : track?.genre === 'EDM' ? 128 : 122);
+  const bassLevelScale = ((track?.bassLevel || 85) / 100);
+  const boostMultiplier = 1.0 + (bassBoost / 6) * 0.45;
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -42,11 +47,6 @@ export const VisualizerCanvas: React.FC<VisualizerCanvasProps> = ({
     const bufferLength = 128;
     const freqData = new Uint8Array(bufferLength);
     const timeData = new Uint8Array(bufferLength);
-
-    // Track musical parameters
-    const bpm = track?.bpm || (track?.genre === 'Phonk' ? 160 : track?.genre === 'Hip-Hop' ? 135 : track?.genre === 'EDM' ? 128 : 122);
-    const bassLevelScale = ((track?.bassLevel || 85) / 100);
-    const boostMultiplier = 1.0 + (bassBoost / 6) * 0.45;
 
     const render = () => {
       animationFrameRef.current = requestAnimationFrame(render);

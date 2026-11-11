@@ -990,7 +990,8 @@ export const App: React.FC = () => {
     } else if (!searchQuery.trim() && selectedGenre !== 'all') {
       const g = selectedGenre.toLowerCase();
       result = result.filter((t) => {
-        const tGenre = t.genre.toLowerCase();
+        const tGenre = (t.genre || '').toLowerCase();
+        if (g === 'youtube' || g === 'trending') return Boolean(t.youtubeId || t.source === 'youtube');
         if (g === 'pop') return tGenre === 'pop' || tGenre.includes('pop');
         if (g === 'hiphop') return tGenre.includes('hip-hop') || tGenre.includes('trap');
         if (g === 'phonk') return tGenre.includes('phonk');

@@ -64,6 +64,7 @@ export type ViewType =
   | 'bass-lab' 
   | 'downloads' 
   | 'favorites' 
+  | 'liked'
   | 'genre'
   | 'vibes';
 
