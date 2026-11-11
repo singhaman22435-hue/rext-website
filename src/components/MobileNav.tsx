@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Search, Heart, HardDrive, Library, Sliders } from 'lucide-react';
+import { Home, Search, Heart, HardDrive, Library, Sliders, Flame } from 'lucide-react';
 import { ViewType } from '../types';
 
 interface MobileNavProps {
@@ -50,6 +50,21 @@ export const MobileNav: React.FC<MobileNavProps> = ({
         >
           <Search className="w-5 h-5 stroke-2" />
           <span className="text-[10px] mt-0.5 tracking-tight">Search</span>
+        </button>
+
+        {/* REXT Vibes (Shorts) */}
+        <button
+          onClick={() => onNavigate('vibes')}
+          className={`relative flex flex-col items-center justify-center min-w-[48px] min-h-[48px] py-1 px-2 rounded-xl transition-colors ${
+            currentView === 'vibes'
+              ? 'text-red-500 font-bold'
+              : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+          }`}
+          aria-label="REXT Vibes"
+        >
+          <Flame className={`w-5 h-5 ${currentView === 'vibes' ? 'fill-current stroke-[2.5]' : 'stroke-2'}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Vibes</span>
+          <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
         </button>
 
         {/* Liked */}

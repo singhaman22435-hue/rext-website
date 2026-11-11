@@ -19,7 +19,8 @@ import {
   Sparkles,
   Clock,
   TrendingUp,
-  Trash2
+  Trash2,
+  Flame
 } from 'lucide-react';
 import { GENRES } from '../services/musicCatalog';
 import { ThemeMode, FontStyle } from '../types';
@@ -45,6 +46,7 @@ interface NavbarProps {
   searchHistory?: string[];
   onSelectSearchHistory?: (term: string) => void;
   onClearSearchHistory?: () => void;
+  onOpenVibes?: () => void;
 }
 
 const THEMES: { id: ThemeMode; label: string; icon: React.ReactNode; colorPill: string }[] = [
@@ -92,6 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   searchHistory = [],
   onSelectSearchHistory,
   onClearSearchHistory,
+  onOpenVibes,
 }) => {
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
@@ -132,6 +135,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          {onOpenVibes && (
+            <button
+              onClick={onOpenVibes}
+              className="flex items-center gap-1 px-2.5 py-1.5 min-h-[36px] rounded-xl bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
+              title="REXT Vibes"
+              aria-label="REXT Vibes"
+            >
+              <Flame className="w-3.5 h-3.5 fill-current" />
+              <span>Vibes</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenBassLab}
             className="flex items-center gap-1 px-2.5 py-1.5 min-h-[36px] rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-main)] shadow-xs"
@@ -358,6 +373,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             )}
           </div>
+
+          {/* REXT Vibes (Shorts Feed) Shortcut Button */}
+          {onOpenVibes && (
+            <button
+              onClick={onOpenVibes}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-red-600 to-orange-500 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-red-500/20 active:scale-95 transition-all"
+              title="Watch REXT Vibes (Shorts Feed)"
+            >
+              <Flame className="w-3.5 h-3.5 fill-current animate-pulse" />
+              <span>Vibes</span>
+            </button>
+          )}
 
           {/* Pro Membership Pill */}
           {onOpenProModal && (

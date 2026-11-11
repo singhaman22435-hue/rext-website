@@ -12,7 +12,8 @@ import {
   Download,
   Plus,
   FolderPlus,
-  TrendingUp
+  TrendingUp,
+  Flame
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -82,6 +83,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <Home className="w-4 h-4" />
             Home
+          </button>
+
+          <button
+            onClick={() => onNavigate('vibes')}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+              currentView === 'vibes'
+                ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Flame className={`w-4 h-4 ${currentView === 'vibes' ? 'text-white' : 'text-[var(--accent-orange)]'}`} />
+              REXT Vibes
+            </div>
+            <span className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full ${
+              currentView === 'vibes' ? 'bg-white/20 text-white' : 'bg-red-500/15 text-red-500'
+            }`}>
+              SHORTS
+            </span>
           </button>
 
           <button

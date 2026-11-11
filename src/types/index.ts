@@ -64,7 +64,8 @@ export type ViewType =
   | 'bass-lab' 
   | 'downloads' 
   | 'favorites' 
-  | 'genre';
+  | 'genre'
+  | 'vibes';
 
 export type ThemeMode = 'warmer' | 'sunset' | 'cold' | 'mocha';
 export type FontStyle = 'outfit' | 'syne' | 'space' | 'cinzel' | 'jakarta';

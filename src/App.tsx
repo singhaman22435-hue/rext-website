@@ -58,6 +58,7 @@ import { AddToPlaylistModal } from './components/AddToPlaylistModal';
 import { SleepTimerModal } from './components/SleepTimerModal';
 import { OfflineBanner } from './components/OfflineBanner';
 import { TrackActionMenu } from './components/TrackActionMenu';
+import { VibesView } from './components/VibesView';
 import { proService } from './services/proService';
 
 import {
@@ -1054,6 +1055,7 @@ export const App: React.FC = () => {
             isPro={isProUser}
             onOpenProModal={() => openModal(setIsProModalOpen, 'pro')}
             onOpenMobileDrawer={() => openModal(setIsMobileDrawerOpen, 'drawer')}
+            onOpenVibes={() => handleNavigateView('vibes')}
             searchHistory={searchHistory}
             onSelectSearchHistory={(term) => {
               setSearchQuery(term);
@@ -1417,44 +1419,46 @@ export const App: React.FC = () => {
       )}
 
       {/* Player Bar */}
-      <PlayerBar
-        currentTrack={currentTrack}
-        isPlaying={isPlaying}
-        onTogglePlay={handleTogglePlay}
-        onNext={handleNextTrack}
-        onPrev={handlePrevTrack}
-        currentTime={currentTime}
-        duration={duration}
-        onSeek={handleSeek}
-        volume={volume}
-        onVolumeChange={handleVolumeChange}
-        isMuted={isMuted}
-        onToggleMute={handleToggleMute}
-        isShuffle={isShuffle}
-        onToggleShuffle={() => setIsShuffle((prev) => !prev)}
-        repeatMode={repeatMode}
-        onCycleRepeat={() =>
-          setRepeatMode((prev) => (prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off'))
-        }
-        bassBoost={bassBoost}
-        onBassChange={handleBassChange}
-        isLiked={currentTrack ? likedIds.includes(currentTrack.id) : false}
-        onToggleLike={() => currentTrack && handleToggleLike(currentTrack.id)}
-        isDownloaded={currentTrack ? downloads.some((d) => d.trackId === currentTrack.id) : false}
-        isDownloading={currentTrack ? Boolean(downloadingIds[currentTrack.id]) : false}
-        downloadProgress={currentTrack ? downloadingIds[currentTrack.id] || 0 : 0}
-        onDownload={() => currentTrack && handleDownloadTrack(currentTrack)}
-        onOpenBassLab={() => openModal(setIsBassLabOpen, 'bass-lab')}
-        onOpenLyrics={() => openModal(setIsLyricsOpen, 'lyrics')}
-        onOpenFullscreen={() => openModal(setIsFullscreenOpen, 'fullscreen')}
-        isVideoVisible={isVideoVisible}
-        onToggleVideo={handleToggleVideo}
-        onOpenQueue={() => openModal(setIsQueueOpen, 'queue')}
-        queueCount={playQueue.length}
-        onOpenSleepTimer={() => openModal(setIsSleepTimerOpen, 'sleep')}
-        sleepTimerEnd={sleepTimerEnd}
-        playbackSpeed={playbackSpeed}
-      />
+      {currentView !== 'vibes' && (
+        <PlayerBar
+          currentTrack={currentTrack}
+          isPlaying={isPlaying}
+          onTogglePlay={handleTogglePlay}
+          onNext={handleNextTrack}
+          onPrev={handlePrevTrack}
+          currentTime={currentTime}
+          duration={duration}
+          onSeek={handleSeek}
+          volume={volume}
+          onVolumeChange={handleVolumeChange}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
+          isShuffle={isShuffle}
+          onToggleShuffle={() => setIsShuffle((prev) => !prev)}
+          repeatMode={repeatMode}
+          onCycleRepeat={() =>
+            setRepeatMode((prev) => (prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off'))
+          }
+          bassBoost={bassBoost}
+          onBassChange={handleBassChange}
+          isLiked={currentTrack ? likedIds.includes(currentTrack.id) : false}
+          onToggleLike={() => currentTrack && handleToggleLike(currentTrack.id)}
+          isDownloaded={currentTrack ? downloads.some((d) => d.trackId === currentTrack.id) : false}
+          isDownloading={currentTrack ? Boolean(downloadingIds[currentTrack.id]) : false}
+          downloadProgress={currentTrack ? downloadingIds[currentTrack.id] || 0 : 0}
+          onDownload={() => currentTrack && handleDownloadTrack(currentTrack)}
+          onOpenBassLab={() => openModal(setIsBassLabOpen, 'bass-lab')}
+          onOpenLyrics={() => openModal(setIsLyricsOpen, 'lyrics')}
+          onOpenFullscreen={() => openModal(setIsFullscreenOpen, 'fullscreen')}
+          isVideoVisible={isVideoVisible}
+          onToggleVideo={handleToggleVideo}
+          onOpenQueue={() => openModal(setIsQueueOpen, 'queue')}
+          queueCount={playQueue.length}
+          onOpenSleepTimer={() => openModal(setIsSleepTimerOpen, 'sleep')}
+          sleepTimerEnd={sleepTimerEnd}
+          playbackSpeed={playbackSpeed}
+        />
+      )}
 
       {/* Modals */}
       <QueueModal
@@ -1524,7 +1528,7 @@ export const App: React.FC = () => {
         onTogglePlay={handleTogglePlay}
         onOpenFullscreen={() => setIsFullscreenOpen(true)}
         onCloseVideo={handleToggleVideo}
-        isVisible={isVideoVisible && Boolean(currentTrack) && !isFullscreenOpen}
+        isVisible={isVideoVisible && Boolean(currentTrack) && !isFullscreenOpen && currentView !== 'vibes'}
       />
 
       <FullscreenPlayer
@@ -1547,6 +1551,29 @@ export const App: React.FC = () => {
         isLiked={currentTrack ? likedIds.includes(currentTrack.id) : false}
         onToggleLike={() => currentTrack && handleToggleLike(currentTrack.id)}
       />
+
+      {/* REXT Vibes (Shorts / Reels Feed) Fullscreen Experience */}
+      {currentView === 'vibes' && (
+        <VibesView
+          tracks={tracks}
+          currentTrack={currentTrack}
+          onPlayFullSong={(track, startTime) => {
+            handleNavigateView('home');
+            handlePlayTrack(track, startTime);
+            setIsFullscreenOpen(true);
+          }}
+          onClose={() => handleNavigateView('home')}
+          likedIds={likedIds}
+          onToggleLike={handleToggleLike}
+          onAddToPlaylist={(track) => {
+            setPlaylistTargetTrack(track);
+            openModal(setIsAddToPlaylistOpen, 'add-to-playlist');
+          }}
+          bassBoost={bassBoost}
+          onBassChange={handleBassChange}
+          showToast={showToast}
+        />
+      )}
 
       <DownloadManagerModal
         isOpen={isDownloadsOpen}
@@ -1582,15 +1609,17 @@ export const App: React.FC = () => {
       />
 
       {/* Mobile Bottom Navigation Bar (< md screens) */}
-      <MobileNav
-        currentView={currentView}
-        onNavigate={handleNavigateView}
-        likedCount={likedIds.length}
-        downloadCount={downloads.length}
-        onOpenBassLab={() => openModal(setIsBassLabOpen, 'bass-lab')}
-        onOpenLibraryDrawer={() => openModal(setIsMobileDrawerOpen, 'drawer')}
-        onFocusSearch={handleFocusSearch}
-      />
+      {currentView !== 'vibes' && (
+        <MobileNav
+          currentView={currentView}
+          onNavigate={handleNavigateView}
+          likedCount={likedIds.length}
+          downloadCount={downloads.length}
+          onOpenBassLab={() => openModal(setIsBassLabOpen, 'bass-lab')}
+          onOpenLibraryDrawer={() => openModal(setIsMobileDrawerOpen, 'drawer')}
+          onFocusSearch={handleFocusSearch}
+        />
+      )}
 
       {/* Mobile Library & Settings Drawer */}
       <MobileLibraryDrawer
