@@ -18,7 +18,9 @@ import {
   Sliders,
   Flame,
   Video,
-  VideoOff
+  VideoOff,
+  ListMusic,
+  Moon
 } from 'lucide-react';
 import { YoutubeIcon } from './YoutubeIcon';
 
@@ -52,6 +54,11 @@ interface PlayerBarProps {
   onOpenFullscreen: () => void;
   isVideoVisible?: boolean;
   onToggleVideo?: () => void;
+  onOpenQueue?: () => void;
+  queueCount?: number;
+  onOpenSleepTimer?: () => void;
+  sleepTimerEnd?: number | null;
+  playbackSpeed?: number;
 }
 
 export const PlayerBar: React.FC<PlayerBarProps> = ({
@@ -84,6 +91,11 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
   onOpenFullscreen,
   isVideoVisible = false,
   onToggleVideo,
+  onOpenQueue,
+  queueCount = 0,
+  onOpenSleepTimer,
+  sleepTimerEnd = null,
+  playbackSpeed = 1.0,
 }) => {
   const [showBassPopover, setShowBassPopover] = useState(false);
 
@@ -98,6 +110,11 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
 
   if (!currentTrack) {
     return null;
+  }
+
+  let remainingSleepMinutes: number | null = null;
+  if (sleepTimerEnd && sleepTimerEnd > 0) {
+    remainingSleepMinutes = Math.max(1, Math.ceil((sleepTimerEnd - Date.now()) / 60000));
   }
 
   return (
@@ -117,13 +134,13 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
           />
         </div>
 
-        <div className="flex items-center justify-between px-3 py-2 gap-2.5">
+        <div className="flex items-center justify-between px-3 py-2 gap-2">
           {/* Track Artwork & Info (Tap anywhere to open Fullscreen Player) */}
           <div
             onClick={onOpenFullscreen}
             className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
           >
-            <div className="relative w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 border border-[var(--border-color)] shadow-xs">
+            <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 border border-[var(--border-color)] shadow-xs">
               <img
                 src={currentTrack.coverUrl}
                 alt={currentTrack.title}
@@ -156,19 +173,37 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
           </div>
 
           {/* Quick Controls */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-0.5 shrink-0">
             {/* Quick Lyrics on Mobile */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onOpenLyrics();
               }}
-              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--accent-orange)] transition-colors"
+              className="min-w-[34px] min-h-[34px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--accent-orange)] transition-colors"
               title="Lyrics"
               aria-label="Open Lyrics"
             >
-              <Mic2 className="w-4 h-4" />
+              <Mic2 className="w-3.5 h-3.5" />
             </button>
+
+            {/* Quick Queue on Mobile */}
+            {onOpenQueue && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenQueue();
+                }}
+                className="min-w-[34px] min-h-[34px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--accent-blue)] transition-colors relative"
+                title="Up Next Queue"
+                aria-label="Open Queue"
+              >
+                <ListMusic className="w-3.5 h-3.5" />
+                {queueCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[var(--accent-orange)]" />
+                )}
+              </button>
+            )}
 
             {/* Like Button */}
             <button
@@ -176,12 +211,12 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 e.stopPropagation();
                 onToggleLike();
               }}
-              className={`min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl transition-colors ${
+              className={`min-w-[34px] min-h-[34px] flex items-center justify-center rounded-xl transition-colors ${
                 isLiked ? 'text-[var(--accent-orange)]' : 'text-[var(--text-muted)]'
               }`}
               aria-label={isLiked ? 'Unlike' : 'Like'}
             >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+              <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
             </button>
 
             {/* Play/Pause Button */}
@@ -190,7 +225,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 e.stopPropagation();
                 onTogglePlay();
               }}
-              className="w-10 h-10 rounded-full bg-[var(--accent-orange)] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
+              className="w-9 h-9 rounded-full bg-[var(--accent-orange)] text-white flex items-center justify-center shadow-md active:scale-95 transition-transform ml-0.5"
               aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
@@ -206,10 +241,10 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 e.stopPropagation();
                 onNext();
               }}
-              className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className="min-w-[34px] min-h-[34px] flex items-center justify-center rounded-xl text-[var(--text-muted)] hover:text-[var(--text-main)]"
               aria-label="Next track"
             >
-              <SkipForward className="w-4 h-4" />
+              <SkipForward className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -247,7 +282,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
           <div className="flex items-center gap-3 min-w-0 max-w-[32%] sm:max-w-[28%]">
             <div
               onClick={onOpenFullscreen}
-              className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 cursor-pointer group shadow-sm border border-[var(--border-color)]"
+              className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 cursor-pointer group shadow-sm border border-[var(--border-color)]"
             >
               <img
                 src={currentTrack.coverUrl}
@@ -272,7 +307,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                   {currentTrack.title}
                 </h4>
                 {Boolean(currentTrack.youtubeId || currentTrack.source === 'youtube') && (
-                  <span className="flex-shrink-0 px-1.5 py-0.5 rounded bg-red-600/15 text-red-600 text-[10px] font-bold tracking-wider flex items-center gap-1 font-mono">
+                  <span className="shrink-0 px-1.5 py-0.5 rounded bg-red-600/15 text-red-600 text-[10px] font-bold tracking-wider flex items-center gap-1 font-mono">
                     <YoutubeIcon className="w-3 h-3 text-red-600" /> YT
                   </span>
                 )}
@@ -288,7 +323,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                   isLiked ? 'text-[var(--accent-orange)]' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
                 }`}
                 title={isLiked ? 'Liked' : 'Like'}
-                aria-label={isLiked ? 'Liked' : 'Like'}
               >
                 <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
               </button>
@@ -310,7 +344,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                     ? `Downloading ${downloadProgress}%`
                     : 'Download MP3'
                 }
-                aria-label="Download Track"
               >
                 {isDownloaded ? (
                   <Check className="w-4 h-4 text-[var(--accent-blue)]" />
@@ -331,7 +364,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 isShuffle ? 'text-[var(--accent-orange)]' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
               }`}
               title="Shuffle"
-              aria-label="Toggle Shuffle"
             >
               <Shuffle className="w-4 h-4" />
             </button>
@@ -340,7 +372,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onPrev}
               className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
               title="Previous"
-              aria-label="Previous Track"
             >
               <SkipBack className="w-5 h-5" />
             </button>
@@ -350,7 +381,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onTogglePlay}
               className="w-11 h-11 rounded-full bg-[var(--accent-orange)] text-white flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition-all"
               title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
-              aria-label={isPlaying ? 'Pause' : 'Play'}
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5 fill-current" />
@@ -363,7 +393,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onNext}
               className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
               title="Next"
-              aria-label="Next Track"
             >
               <SkipForward className="w-5 h-5" />
             </button>
@@ -374,7 +403,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 repeatMode !== 'off' ? 'text-[var(--accent-orange)]' : 'text-[var(--text-sub)] hover:text-[var(--text-main)]'
               }`}
               title={`Repeat: ${repeatMode}`}
-              aria-label={`Repeat mode: ${repeatMode}`}
             >
               {repeatMode === 'one' ? (
                 <Repeat1 className="w-4 h-4" />
@@ -384,8 +412,8 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
             </button>
           </div>
 
-          {/* Right: Bass Slider Popover, Lyrics, Equalizer, Volume */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right: Bass, Video, EQ, Lyrics, Queue, Sleep, Volume */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Direct Quick Bass Slider Popover */}
             <div className="relative">
               <button
@@ -396,7 +424,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                     : 'bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
                 title="Bass Boost"
-                aria-label="Bass Boost Controls"
               >
                 <Flame className="w-3.5 h-3.5" />
                 <span>Bass</span>
@@ -439,7 +466,7 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               )}
             </div>
 
-            {/* Watch Video Button (When track is from YouTube) */}
+            {/* Watch Video Button */}
             {Boolean(currentTrack.youtubeId || currentTrack.source === 'youtube') && onToggleVideo && (
               <button
                 onClick={onToggleVideo}
@@ -449,7 +476,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                     : 'bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-red-500'
                 }`}
                 title={isVideoVisible ? 'Hide Video' : 'Watch Official Music Video'}
-                aria-label={isVideoVisible ? 'Hide Video' : 'Watch Video'}
               >
                 {isVideoVisible ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
                 <span className="hidden lg:inline text-[11px]">{isVideoVisible ? 'Hide' : 'Video'}</span>
@@ -461,7 +487,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onOpenBassLab}
               className="p-2 rounded-xl bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
               title="Equalizer"
-              aria-label="Open Equalizer"
             >
               <Sliders className="w-4 h-4" />
             </button>
@@ -471,10 +496,45 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
               onClick={onOpenLyrics}
               className="p-2 rounded-xl bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors hidden sm:block"
               title="Lyrics (Live Karaoke)"
-              aria-label="Open Lyrics"
             >
               <Mic2 className="w-4 h-4" />
             </button>
+
+            {/* Queue Button */}
+            {onOpenQueue && (
+              <button
+                onClick={onOpenQueue}
+                className="p-2 rounded-xl bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors relative"
+                title="Play Queue (Up Next)"
+              >
+                <ListMusic className="w-4 h-4" />
+                {queueCount > 0 && (
+                  <span className="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-[var(--accent-orange)] text-white text-[9px] font-mono font-bold shadow-xs">
+                    {queueCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Sleep Timer / Speed Button */}
+            {onOpenSleepTimer && (
+              <button
+                onClick={onOpenSleepTimer}
+                className={`p-2 rounded-xl transition-colors relative ${
+                  sleepTimerEnd !== null || playbackSpeed !== 1.0
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-[var(--bg-surface-hover)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                }`}
+                title="Sleep Timer & Speed"
+              >
+                <Moon className="w-4 h-4" />
+                {remainingSleepMinutes !== null && (
+                  <span className="absolute -top-1 -right-1 px-1 py-0.2 rounded-full bg-indigo-500 text-white text-[8px] font-mono font-bold">
+                    {remainingSleepMinutes}m
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* Volume Control */}
             <div className="hidden md:flex items-center gap-2 pl-1">
@@ -482,7 +542,6 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 onClick={onToggleMute}
                 className="text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
                 title={isMuted ? 'Unmute' : 'Mute'}
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
               >
                 {isMuted || volume === 0 ? (
                   <VolumeX className="w-4 h-4 text-red-500" />
@@ -497,9 +556,8 @@ export const PlayerBar: React.FC<PlayerBarProps> = ({
                 step="0.02"
                 value={isMuted ? 0 : volume}
                 onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-                className="w-20 h-1.5 bg-black/15 dark:bg-white/15 rounded-full cursor-pointer accent-[var(--accent-orange)]"
+                className="w-18 h-1.5 bg-black/15 dark:bg-white/15 rounded-full cursor-pointer accent-[var(--accent-orange)]"
                 title={`Volume: ${Math.round(volume * 100)}%`}
-                aria-label="Volume slider"
               />
             </div>
           </div>

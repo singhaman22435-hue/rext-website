@@ -3,22 +3,28 @@ import { Playlist, ThemeMode, FontStyle } from '../types';
 import {
   X,
   Disc,
-  Plus,
-  Crown,
   Palette,
   Type,
-  ExternalLink,
+  FileAudio,
+  Crown,
   ChevronRight,
+  Sun,
+  Snowflake,
+  Coffee,
+  Moon,
   Sparkles,
-  Zap
+  Plus,
+  FolderPlus
 } from 'lucide-react';
 
 interface MobileLibraryDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   playlists: Playlist[];
+  userPlaylists?: Playlist[];
   selectedPlaylistId: string | null;
   onSelectPlaylist: (playlist: Playlist) => void;
+  onOpenCreatePlaylist?: () => void;
   currentTheme: ThemeMode;
   onThemeChange: (theme: ThemeMode) => void;
   currentFont: FontStyle;
@@ -28,11 +34,11 @@ interface MobileLibraryDrawerProps {
   onOpenProModal?: () => void;
 }
 
-const THEMES: { id: ThemeMode; label: string; color: string }[] = [
-  { id: 'warmer', label: 'Cashmere Light', color: '#F7F4EE' },
-  { id: 'sunset', label: 'Sunset Warm', color: '#FDF6EE' },
-  { id: 'cold', label: 'Cold Frost', color: '#F1F5F9' },
-  { id: 'mocha', label: 'Velvet Mocha', color: '#1A1614' },
+const THEMES: { id: ThemeMode; label: string; icon: React.ReactNode; colorPill: string }[] = [
+  { id: 'warmer', label: 'Cashmere Light', icon: <Coffee className="w-3.5 h-3.5" />, colorPill: '#F7F4EE' },
+  { id: 'sunset', label: 'Sunset Warm', icon: <Sun className="w-3.5 h-3.5" />, colorPill: '#FDF6EE' },
+  { id: 'cold', label: 'Cold Frost', icon: <Snowflake className="w-3.5 h-3.5" />, colorPill: '#F1F5F9' },
+  { id: 'mocha', label: 'Velvet Mocha', icon: <Moon className="w-3.5 h-3.5" />, colorPill: '#1A1614' },
 ];
 
 const FONTS: { id: FontStyle; label: string }[] = [
@@ -47,8 +53,10 @@ export const MobileLibraryDrawer: React.FC<MobileLibraryDrawerProps> = ({
   isOpen,
   onClose,
   playlists,
+  userPlaylists = [],
   selectedPlaylistId,
   onSelectPlaylist,
+  onOpenCreatePlaylist,
   currentTheme,
   onThemeChange,
   currentFont,
@@ -99,40 +107,88 @@ export const MobileLibraryDrawer: React.FC<MobileLibraryDrawerProps> = ({
         <div
           onClick={() => {
             onClose();
-            if (onOpenProModal) onOpenProModal();
+            onOpenProModal?.();
           }}
-          className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-            isPro
-              ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
-              : 'bg-gradient-to-r from-[var(--accent-orange)] to-amber-500 text-white shadow-md'
-          }`}
+          className="p-3.5 rounded-2xl bg-gradient-to-r from-[var(--accent-orange)]/15 via-amber-500/15 to-[var(--accent-blue)]/15 border border-[var(--accent-orange)]/30 flex items-center justify-between cursor-pointer"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Crown className="w-5 h-5 fill-current" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-r from-[var(--accent-orange)] to-amber-500 text-white flex items-center justify-center shadow-xs">
+              <Crown className="w-4 h-4 fill-current" />
             </div>
             <div>
-              <h4 className="font-bold text-sm leading-tight">
+              <p className="font-extrabold text-xs text-[var(--text-main)]">
                 {isPro ? 'Rext Pro Active' : 'Upgrade to Rext Pro'}
-              </h4>
-              <p className={`text-[11px] ${isPro ? 'text-[var(--text-muted)]' : 'text-white/80'}`}>
-                {isPro ? 'Cryptographic Lifetime License Verified' : 'FLAC 24-bit • Bass Chamber • Offline Audio'}
+              </p>
+              <p className="text-[10px] text-[var(--text-muted)]">
+                {isPro ? 'VIP High-Res Master Audio' : 'Unlock 18dB Bass & Unlimited Storage'}
               </p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 opacity-75 shrink-0" />
+          <span className="text-xs font-bold text-[var(--accent-orange)]">
+            {isPro ? 'Manage' : 'Upgrade →'}
+          </span>
         </div>
 
-        {/* Featured Curated Playlists */}
-        <div className="space-y-2.5">
+        {/* Playlists Section */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-sub)] flex items-center gap-1.5">
-              <Disc className="w-3.5 h-3.5 text-[var(--accent-orange)]" /> Curated Playlists
+              <Disc className="w-3.5 h-3.5 text-[var(--accent-orange)]" /> Playlists
             </span>
-            <span className="text-[10px] font-mono text-[var(--text-muted)]">{playlists.length} packs</span>
+            {onOpenCreatePlaylist && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenCreatePlaylist();
+                }}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[var(--accent-orange)]/15 text-[var(--accent-orange)] text-xs font-bold"
+              >
+                <Plus className="w-3 h-3" /> New
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-2">
+            {/* User Custom Playlists */}
+            {userPlaylists.map((pl) => {
+              const isSelected = selectedPlaylistId === pl.id;
+              return (
+                <button
+                  key={pl.id}
+                  onClick={() => {
+                    onSelectPlaylist(pl);
+                    onClose();
+                  }}
+                  className={`w-full flex items-center gap-3 p-2.5 rounded-2xl border text-left transition-all ${
+                    isSelected
+                      ? 'bg-[var(--accent-orange)]/10 border-[var(--accent-orange)] shadow-sm'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-color)] hover:bg-[var(--bg-surface-hover)]'
+                  }`}
+                >
+                  <img
+                    src={pl.coverUrl}
+                    alt={pl.name}
+                    className="w-12 h-12 rounded-xl object-cover shrink-0 border border-[var(--border-color)] shadow-xs"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h5
+                      className={`text-xs font-bold truncate ${
+                        isSelected ? 'text-[var(--accent-orange)]' : 'text-[var(--text-main)]'
+                      }`}
+                    >
+                      {pl.name}
+                    </h5>
+                    <p className="text-[10px] text-[var(--text-muted)] truncate">{pl.description}</p>
+                    <span className="text-[9px] font-mono text-[var(--accent-orange)] font-semibold mt-0.5 inline-block">
+                      {pl.trackIds.length} Songs (Custom)
+                    </span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+                </button>
+              );
+            })}
+
+            {/* Curated Playlists */}
             {playlists.map((pl) => {
               const isSelected = selectedPlaylistId === pl.id;
               return (
@@ -183,65 +239,73 @@ export const MobileLibraryDrawer: React.FC<MobileLibraryDrawerProps> = ({
               onClose();
               onOpenImport();
             }}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-[var(--bg-surface)] border border-dashed border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] transition-colors"
+            className="w-full flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] hover:bg-[var(--bg-surface-hover)] text-xs font-semibold text-[var(--text-main)] transition-colors"
           >
-            <Plus className="w-4 h-4 text-[var(--accent-orange)]" />
-            <span>Import YouTube URL or Audio File</span>
+            <div className="flex items-center gap-2.5">
+              <FileAudio className="w-4 h-4 text-[var(--accent-blue)]" />
+              <span>Import Audio (.mp3, .flac, .wav)</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-[var(--text-muted)]" />
           </button>
         </div>
 
-        {/* Theme & Tone Picker */}
-        <div className="space-y-2">
+        {/* Theme Settings */}
+        <div className="space-y-2.5">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-sub)] flex items-center gap-1.5">
-            <Palette className="w-3.5 h-3.5 text-[var(--accent-blue)]" /> Background Theme
+            <Palette className="w-3.5 h-3.5 text-[var(--accent-blue)]" /> Theme Tone
           </span>
           <div className="grid grid-cols-2 gap-2">
             {THEMES.map((theme) => {
-              const active = currentTheme === theme.id;
+              const isActive = currentTheme === theme.id;
               return (
                 <button
                   key={theme.id}
                   onClick={() => onThemeChange(theme.id)}
-                  className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium transition-all ${
-                    active
-                      ? 'border-[var(--accent-orange)] bg-[var(--accent-orange)]/10 text-[var(--accent-orange)] font-bold'
-                      : 'border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)]'
+                  className={`flex items-center justify-between p-2.5 rounded-2xl border text-xs font-medium transition-all ${
+                    isActive
+                      ? 'bg-[var(--accent-orange)] text-white font-bold border-transparent shadow-xs'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-main)]'
                   }`}
                 >
-                  <span
-                    className="w-4 h-4 rounded-full border border-black/20 shrink-0 shadow-xs"
-                    style={{ backgroundColor: theme.color }}
-                  />
-                  <span className="truncate">{theme.label}</span>
+                  <div className="flex items-center gap-2 truncate">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-black/15 dark:border-white/20 shrink-0"
+                      style={{ backgroundColor: theme.colorPill }}
+                    />
+                    <span className="truncate">{theme.label}</span>
+                  </div>
+                  {theme.icon}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Font Style Picker */}
-        <div className="space-y-2">
+        {/* Font Typography */}
+        <div className="space-y-2.5">
           <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-sub)] flex items-center gap-1.5">
-            <Type className="w-3.5 h-3.5 text-purple-500" /> Typography Font
+            <Type className="w-3.5 h-3.5 text-[var(--accent-orange)]" /> Typography
           </span>
-          <div className="flex flex-wrap gap-1.5">
-            {FONTS.map((font) => (
-              <button
-                key={font.id}
-                onClick={() => onFontChange(font.id)}
-                className={`px-3 py-1.5 rounded-xl border text-xs transition-colors font-${font.id} ${
-                  currentFont === font.id
-                    ? 'bg-[var(--accent-orange)] text-white border-transparent font-bold'
-                    : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-main)]'
-                }`}
-              >
-                {font.label}
-              </button>
-            ))}
+          <div className="grid grid-cols-3 gap-1.5">
+            {FONTS.map((font) => {
+              const isActive = currentFont === font.id;
+              return (
+                <button
+                  key={font.id}
+                  onClick={() => onFontChange(font.id)}
+                  className={`py-2 px-1.5 rounded-xl border text-xs text-center transition-all ${
+                    isActive
+                      ? 'bg-[var(--accent-blue)] text-white font-bold border-transparent shadow-xs'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-main)]'
+                  }`}
+                >
+                  {font.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
     </div>
   );
 };
-

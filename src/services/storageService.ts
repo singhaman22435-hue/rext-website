@@ -1,11 +1,12 @@
 import { get, set, del } from 'idb-keyval';
-import { Track, DownloadItem } from '../types';
+import { Track, DownloadItem, Playlist } from '../types';
 
 const LIKED_KEY = 'rext_liked_tracks';
 const RECENT_KEY = 'rext_recent_tracks';
-const PLAYLISTS_KEY = 'rext_playlists';
+const USER_PLAYLISTS_KEY = 'rext_user_playlists';
 const OFFLINE_AUDIO_PREFIX = 'rext_offline_audio_';
 const DOWNLOAD_ITEMS_KEY = 'rext_download_items';
+const SEARCH_HISTORY_KEY = 'rext_search_history';
 
 export class StorageService {
   /**
@@ -50,6 +51,87 @@ export class StorageService {
     const updated = [trackId, ...list].slice(0, 30);
     localStorage.setItem(RECENT_KEY, JSON.stringify(updated));
     return updated;
+  }
+
+  /**
+   * Custom User Playlists (CRUD)
+   */
+  static getUserPlaylists(): Playlist[] {
+    try {
+      const data = localStorage.getItem(USER_PLAYLISTS_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  static createUserPlaylist(name: string, description: string): Playlist {
+    const playlists = this.getUserPlaylists();
+    const id = `user-pl-${Date.now()}`;
+    const newPlaylist: Playlist = {
+      id,
+      name,
+      description: description || 'Custom collection of favorite songs',
+      coverUrl:
+        'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop',
+      trackIds: [],
+    };
+    playlists.unshift(newPlaylist);
+    localStorage.setItem(USER_PLAYLISTS_KEY, JSON.stringify(playlists));
+    return newPlaylist;
+  }
+
+  static addTrackToPlaylist(playlistId: string, trackId: string): Playlist[] {
+    const playlists = this.getUserPlaylists();
+    const target = playlists.find((p) => p.id === playlistId);
+    if (target) {
+      if (!target.trackIds.includes(trackId)) {
+        target.trackIds.push(trackId);
+      }
+      localStorage.setItem(USER_PLAYLISTS_KEY, JSON.stringify(playlists));
+    }
+    return playlists;
+  }
+
+  static removeTrackFromPlaylist(playlistId: string, trackId: string): Playlist[] {
+    const playlists = this.getUserPlaylists();
+    const target = playlists.find((p) => p.id === playlistId);
+    if (target) {
+      target.trackIds = target.trackIds.filter((id) => id !== trackId);
+      localStorage.setItem(USER_PLAYLISTS_KEY, JSON.stringify(playlists));
+    }
+    return playlists;
+  }
+
+  static deleteUserPlaylist(playlistId: string): Playlist[] {
+    const playlists = this.getUserPlaylists().filter((p) => p.id !== playlistId);
+    localStorage.setItem(USER_PLAYLISTS_KEY, JSON.stringify(playlists));
+    return playlists;
+  }
+
+  /**
+   * Search History
+   */
+  static getSearchHistory(): string[] {
+    try {
+      const data = localStorage.getItem(SEARCH_HISTORY_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  static addSearchHistory(term: string): string[] {
+    if (!term || !term.trim()) return this.getSearchHistory();
+    const clean = term.trim();
+    const list = this.getSearchHistory().filter((t) => t.toLowerCase() !== clean.toLowerCase());
+    const updated = [clean, ...list].slice(0, 10);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+    return updated;
+  }
+
+  static clearSearchHistory(): void {
+    localStorage.removeItem(SEARCH_HISTORY_KEY);
   }
 
   /**
@@ -111,4 +193,3 @@ export class StorageService {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 }
-

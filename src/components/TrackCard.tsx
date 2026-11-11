@@ -1,6 +1,6 @@
 import React from 'react';
 import { Track } from '../types';
-import { Play, Pause, Heart, Download, Check } from 'lucide-react';
+import { Play, Pause, Heart, Download, Check, MoreVertical } from 'lucide-react';
 import { YoutubeIcon } from './YoutubeIcon';
 
 interface TrackCardProps {
@@ -15,6 +15,7 @@ interface TrackCardProps {
   onToggleLike: () => void;
   onDownload: () => void;
   onOpenBassLab?: () => void;
+  onOpenMenu?: (track: Track, e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const TrackCard: React.FC<TrackCardProps> = ({
@@ -28,6 +29,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({
   onPlay,
   onToggleLike,
   onDownload,
+  onOpenMenu,
 }) => {
   const formatDuration = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -62,21 +64,21 @@ export const TrackCard: React.FC<TrackCardProps> = ({
           className={`absolute bottom-2.5 right-2.5 w-10 h-10 rounded-full bg-[var(--accent-orange)] text-white flex items-center justify-center shadow-md transition-all duration-200 ${
             isCurrent && isPlaying
               ? 'opacity-100 scale-100'
-              : 'opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 hover:scale-105'
+              : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100'
           }`}
         >
           {isCurrent && isPlaying ? (
-            <Pause className="w-4 h-4 fill-current" />
+            <Pause className="w-5 h-5 fill-current" />
           ) : (
-            <Play className="w-4 h-4 fill-current translate-x-0.5" />
+            <Play className="w-5 h-5 fill-current translate-x-0.5" />
           )}
         </div>
 
-        {/* Subtle Genre Pill & YouTube Badge */}
-        <div className="absolute top-2 left-2 flex items-center gap-1.5">
-          <div className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-medium text-white truncate max-w-[100px]">
-            {track.genre}
-          </div>
+        {/* Bitrate / Source Pill */}
+        <div className="absolute top-2 left-2 flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[10px] font-mono text-white border border-white/10">
+            {track.bitrate}
+          </span>
           {Boolean(track.youtubeId || track.source === 'youtube') && (
             <div className="px-1.5 py-0.5 rounded-md bg-red-600 text-[9px] font-bold text-white flex items-center gap-0.5 shadow-sm">
               <YoutubeIcon className="w-2.5 h-2.5" /> YT
@@ -106,7 +108,7 @@ export const TrackCard: React.FC<TrackCardProps> = ({
           {formatDuration(track.duration)}
         </span>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             onClick={onToggleLike}
             className={`p-1.5 rounded-lg transition-colors ${
@@ -137,6 +139,16 @@ export const TrackCard: React.FC<TrackCardProps> = ({
               <Download className="w-3.5 h-3.5" />
             )}
           </button>
+
+          {onOpenMenu && (
+            <button
+              onClick={(e) => onOpenMenu(track, e)}
+              className="p-1.5 rounded-lg text-[var(--text-sub)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              title="More options"
+            >
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
     </div>

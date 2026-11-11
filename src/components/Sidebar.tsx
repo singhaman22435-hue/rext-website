@@ -9,7 +9,9 @@ import {
   Disc,
   Radio,
   Crown,
-  Download
+  Download,
+  Plus,
+  FolderPlus
 } from 'lucide-react';
 import { YoutubeIcon } from './YoutubeIcon';
 
@@ -17,8 +19,10 @@ interface SidebarProps {
   currentView: ViewType;
   onNavigate: (view: ViewType) => void;
   playlists: Playlist[];
+  userPlaylists?: Playlist[];
   selectedPlaylistId: string | null;
   onSelectPlaylist: (playlist: Playlist) => void;
+  onOpenCreatePlaylist?: () => void;
   bassBoost: number;
   likedCount: number;
   downloadCount: number;
@@ -32,8 +36,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentView,
   onNavigate,
   playlists,
+  userPlaylists = [],
   selectedPlaylistId,
   onSelectPlaylist,
+  onOpenCreatePlaylist,
   bassBoost,
   likedCount,
   downloadCount,
@@ -43,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenInstallModal,
 }) => {
   return (
-    <aside className="w-60 bg-[var(--bg-sidebar)] border-r border-[var(--border-color)] flex flex-col justify-between p-4 flex-shrink-0 select-none transition-colors duration-300">
+    <aside className="w-60 bg-[var(--bg-sidebar)] border-r border-[var(--border-color)] flex flex-col justify-between p-4 shrink-0 select-none transition-colors duration-300">
       {/* Top Branding & Nav */}
       <div className="space-y-6">
         {/* Brand */}
@@ -88,43 +94,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <div className="flex items-center gap-3">
               <YoutubeIcon className={`w-4 h-4 ${currentView === 'youtube' ? 'text-white' : 'text-red-500'}`} />
-              YouTube Music
+              YouTube Studio
             </div>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-500 font-mono">
-              LIVE
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+              HD
             </span>
-          </button>
-
-          <button
-            onClick={() => onNavigate('bass-lab')}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
-              currentView === 'bass-lab'
-                ? 'bg-[var(--accent-orange)] text-white shadow-sm'
-                : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Sliders className="w-4 h-4" />
-              Equalizer & Bass
-            </div>
-            {bassBoost > 0 && (
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[var(--accent-orange)]/15 text-[var(--accent-orange)] font-mono">
-                +{bassBoost}dB
-              </span>
-            )}
           </button>
         </nav>
 
         {/* Library Section */}
         <div className="space-y-1 pt-3 border-t border-[var(--border-color)]">
           <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--text-sub)]">
-            Your Library
+            Library
           </div>
 
           <button
-            onClick={() => onNavigate('favorites')}
+            onClick={() => onNavigate('liked')}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-              currentView === 'favorites'
+              currentView === 'liked'
                 ? 'bg-[var(--bg-surface)] text-[var(--accent-orange)] font-bold'
                 : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
             }`}
@@ -164,17 +151,47 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="space-y-1 pt-3 border-t border-[var(--border-color)]">
           <div className="flex items-center justify-between px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--text-sub)]">
             <span>Playlists</span>
-            <Disc className="w-3.5 h-3.5" />
+            {onOpenCreatePlaylist && (
+              <button
+                onClick={onOpenCreatePlaylist}
+                className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-[var(--accent-orange)] transition-colors"
+                title="Create New Playlist"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="space-y-0.5 max-h-48 overflow-y-auto pr-1">
+            {/* User Custom Playlists */}
+            {userPlaylists.map((pl) => {
+              const isSelected = selectedPlaylistId === pl.id;
+              return (
+                <button
+                  key={pl.id}
+                  onClick={() => onSelectPlaylist(pl)}
+                  className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium truncate transition-colors flex items-center justify-between ${
+                    isSelected
+                      ? 'bg-[var(--bg-surface)] text-[var(--accent-orange)] font-bold shadow-sm'
+                      : 'text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
+                  }`}
+                >
+                  <span className="truncate">{pl.name}</span>
+                  <span className="text-[10px] font-mono text-[var(--text-muted)]">
+                    {pl.trackIds.length}
+                  </span>
+                </button>
+              );
+            })}
+
+            {/* Featured Playlists */}
             {playlists.map((pl) => {
               const isSelected = selectedPlaylistId === pl.id;
               return (
                 <button
                   key={pl.id}
                   onClick={() => onSelectPlaylist(pl)}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-xs font-medium truncate transition-colors ${
+                  className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium truncate transition-colors ${
                     isSelected
                       ? 'bg-[var(--bg-surface)] text-[var(--accent-orange)] font-bold shadow-sm'
                       : 'text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-surface-hover)]'
@@ -219,29 +236,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {onOpenInstallModal && (
           <button
             onClick={onOpenInstallModal}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-orange)] text-xs font-semibold text-[var(--text-main)] shadow-sm transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-xs font-bold text-[var(--text-main)] border border-[var(--border-color)] transition-colors"
           >
             <Download className="w-3.5 h-3.5 text-[var(--accent-orange)]" />
-            Install App
+            <span>Install Rext App</span>
           </button>
         )}
-
-        {/* Bottom Audio Status */}
-        <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] p-3 space-y-1.5 shadow-sm">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-[var(--text-main)] flex items-center gap-1.5">
-              <Radio className="w-3 h-3 text-[var(--accent-orange)] animate-pulse" />
-              Audio Engine
-            </span>
-            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-green-500/15 text-green-700 dark:text-green-400 font-bold">
-              320 kbps
-            </span>
-          </div>
-          <div className="text-[11px] text-[var(--text-muted)] flex justify-between font-mono">
-            <span>Bass Boost:</span>
-            <span className="text-[var(--accent-orange)] font-semibold">+{bassBoost} dB</span>
-          </div>
-        </div>
       </div>
     </aside>
   );

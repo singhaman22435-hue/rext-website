@@ -1,6 +1,6 @@
 import React from 'react';
 import { Track } from '../types';
-import { Play, Pause, Heart, Download, Check } from 'lucide-react';
+import { Play, Pause, Heart, Download, Check, MoreVertical } from 'lucide-react';
 import { YoutubeIcon } from './YoutubeIcon';
 
 interface TrackRowProps {
@@ -16,6 +16,7 @@ interface TrackRowProps {
   onToggleLike: () => void;
   onDownload: () => void;
   onOpenBassLab?: () => void;
+  onOpenMenu?: (track: Track, e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const TrackRow: React.FC<TrackRowProps> = ({
@@ -30,6 +31,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
   onPlay,
   onToggleLike,
   onDownload,
+  onOpenMenu,
 }) => {
   const formatDuration = (secs: number) => {
     const mins = Math.floor(secs / 60);
@@ -49,7 +51,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
       {/* Left: Index / Play Icon & Track Info */}
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
         {/* Track Index or Playing Waveform */}
-        <div className="w-6 text-center text-xs font-mono font-medium text-[var(--text-sub)] flex-shrink-0 flex items-center justify-center">
+        <div className="w-6 text-center text-xs font-mono font-medium text-[var(--text-sub)] shrink-0 flex items-center justify-center">
           {isCurrent && isPlaying ? (
             <div className="flex items-end gap-0.5 h-3.5">
               <span className="w-1 h-3 bg-[var(--accent-orange)] rounded-full animate-pulse" />
@@ -67,7 +69,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         </div>
 
         {/* Cover Art */}
-        <div className="relative w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 border border-[var(--border-color)] shadow-sm">
+        <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 border border-[var(--border-color)] shadow-sm">
           <img
             src={track.coverUrl}
             alt={track.title}
@@ -75,7 +77,7 @@ export const TrackRow: React.FC<TrackRowProps> = ({
             loading="lazy"
             onError={(e) => {
               e.currentTarget.src =
-                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300';
+                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200';
             }}
           />
           {isCurrent && (
@@ -92,16 +94,16 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         {/* Title & Artist */}
         <div className="min-w-0 flex-1 pr-2">
           <div className="flex items-center gap-1.5 truncate">
-            <p
-              className={`text-sm font-semibold truncate ${
+            <h4
+              className={`font-semibold text-sm truncate ${
                 isCurrent ? 'text-[var(--accent-orange)] font-bold' : 'text-[var(--text-main)] group-hover:text-[var(--accent-orange)]'
               }`}
             >
               {track.title}
-            </p>
+            </h4>
             {Boolean(track.youtubeId || track.source === 'youtube') && (
-              <span className="flex-shrink-0 px-1.5 py-0.2 rounded bg-red-600/15 text-red-600 text-[9px] font-bold tracking-wider flex items-center gap-0.5 font-mono">
-                <YoutubeIcon className="w-2.5 h-2.5" /> YT
+              <span className="shrink-0 px-1.5 py-0.5 rounded bg-red-600/15 text-red-600 text-[10px] font-bold tracking-wider flex items-center gap-1 font-mono">
+                <YoutubeIcon className="w-2.5 h-2.5 text-red-600" /> YT
               </span>
             )}
           </div>
@@ -109,13 +111,15 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         </div>
       </div>
 
-      {/* Middle: Genre */}
-      <div className="hidden md:block w-36 px-2">
-        <p className="text-xs text-[var(--text-muted)] truncate">{track.genre}</p>
-      </div>
+      {/* Right: Album / Genre, Duration & Actions */}
+      <div
+        className="flex items-center gap-2 sm:gap-3 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="text-xs text-[var(--text-muted)] hidden md:block max-w-[140px] truncate">
+          {track.album || track.genre}
+        </span>
 
-      {/* Right: Like, Download & Duration */}
-      <div className="flex items-center gap-3 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
         {/* Like Button */}
         <button
           onClick={onToggleLike}
@@ -163,6 +167,17 @@ export const TrackRow: React.FC<TrackRowProps> = ({
         <span className="text-xs font-mono text-[var(--text-sub)] w-10 text-right">
           {formatDuration(track.duration)}
         </span>
+
+        {/* More 3-Dots Menu Button */}
+        {onOpenMenu && (
+          <button
+            onClick={(e) => onOpenMenu(track, e)}
+            className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+            title="More options"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );
