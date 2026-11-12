@@ -40,7 +40,7 @@ export const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({
     // Simulate real gateway handshake (Razorpay / Stripe / Lemon Squeezy)
     setTimeout(() => {
       setIsProcessing(false);
-      const genuineKey = proService.generateKeysBatch(1)[0];
+      const genuineKey = `REXT-${plan.id.slice(0, 4).toUpperCase()}-${Date.now().toString(36).slice(-4).toUpperCase()}-2026-VIP1`;
       proService.activatePro(genuineKey);
       confetti({
         particleCount: 80,
@@ -52,9 +52,9 @@ export const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({
     }, 1200);
   };
 
-  const handleActivateKey = (e: React.FormEvent) => {
+  const handleActivateKey = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = proService.validateAndActivateKey(licenseKeyInput);
+    const res = await proService.validateAndActivateKey(licenseKeyInput);
     setKeyStatus(res);
     if (res.success) {
       confetti({

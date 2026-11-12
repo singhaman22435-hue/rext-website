@@ -91,7 +91,7 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
                 Equalizer & Bass Lab
               </h2>
               <p className="text-xs text-[var(--text-muted)]">
-                Tune bass boost, 5-band EQ frequencies, and 3D spatial sound
+                Tune bass boost, 10-band pro equalizer frequencies, and 3D spatial sound
               </p>
             </div>
           </div>
@@ -218,14 +218,14 @@ export const BassLabModal: React.FC<BassLabModalProps> = ({
           </div>
         </div>
 
-        {/* 5-Band Graphic Equalizer */}
+        {/* 10-Band Graphic Equalizer */}
         <div className="rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] p-5 space-y-4">
           <h3 className="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
             <Sliders className="w-4 h-4 text-[var(--accent-blue)]" />
-            5-Band Equalizer
+            10-Band Pro Equalizer
           </h3>
 
-          <div className="grid grid-cols-5 gap-3 pt-2">
+          <div className="grid grid-cols-5 md:grid-cols-10 gap-2 pt-2">
             {eqBands.map((band, idx) => (
               <div key={band.freq} className="flex flex-col items-center space-y-2">
                 <span className="text-xs font-mono font-semibold text-[var(--text-main)]">

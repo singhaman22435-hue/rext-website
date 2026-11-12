@@ -7,7 +7,8 @@
  * - Brute-Force Key Guessing
  */
 
-const APP_SECRET_SALT = 'REXT_AUDIO_2026_MASTER_SECRET_KEY_9921';
+// Device identification string
+const CLIENT_SALT = 'rext_app_client';
 
 /**
  * Pure TypeScript synchronous SHA-256 implementation
@@ -109,59 +110,33 @@ export function getDeviceFingerprint(): string {
     screen.height || 0,
     screen.colorDepth || 0,
     new Date().getTimezoneOffset(),
-    APP_SECRET_SALT
+    CLIENT_SALT
   ];
   return sha256(components.join('::')).substring(0, 16);
 }
 
 /**
- * Generates a tamper-proof cryptographically signed license key
+ * Validates the syntactic structure of a REXT license key
  * Format: REXT-XXXX-YYYY-ZZZZ-CCCC
- * where CCCC is the HMAC checksum of the body and APP_SECRET
- */
-export function generateCryptographicLicenseKey(entropySeed?: string): string {
-  const seed = (entropySeed || Math.random().toString(36) + Date.now().toString(36))
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '');
-
-  const part1 = (seed.slice(0, 4).padEnd(4, 'X'));
-  const part2 = (seed.slice(4, 8).padEnd(4, '7'));
-  const part3 = (seed.slice(8, 12).padEnd(4, '9'));
-
-  const body = `REXT-${part1}-${part2}-${part3}`;
-  const checksum = sha256(body + APP_SECRET_SALT).substring(0, 4).toUpperCase();
-  return `${body}-${checksum}`;
-}
-
-/**
- * Verifies that a given license key has a genuine cryptographic signature
  */
 export function verifyLicenseKey(key: string): boolean {
   if (!key || typeof key !== 'string') return false;
   const clean = key.trim().toUpperCase();
-
-  // Master founder key bypass for developer testing
-  if (clean === 'REXT-FOUNDER-LIFETIME-VIP99') {
-    return true;
-  }
 
   const parts = clean.split('-');
   if (parts.length !== 5 || parts[0] !== 'REXT') {
     return false;
   }
 
-  const body = `${parts[0]}-${parts[1]}-${parts[2]}-${parts[3]}`;
-  const providedChecksum = parts[4];
-  const expectedChecksum = sha256(body + APP_SECRET_SALT).substring(0, 4).toUpperCase();
-
-  return providedChecksum === expectedChecksum;
+  // Ensure all segments are valid alphanumeric 4-character codes
+  return parts.every((p) => /^[A-Z0-9]{4}$/.test(p));
 }
 
 /**
- * Signs an active Pro session to prevent localStorage manipulation in DevTools
+ * Signs an active Pro session locally
  */
 export function createSessionSignature(key: string, deviceId: string): string {
-  return sha256(`${key}::${deviceId}::${APP_SECRET_SALT}::PRO_ACTIVE`);
+  return sha256(`${key}::${deviceId}::PRO_ACTIVE`);
 }
 
 /**

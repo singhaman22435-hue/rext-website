@@ -74,9 +74,15 @@ export const TrackRow: React.FC<TrackRowProps> = ({
             alt={track.title}
             className="w-full h-full object-cover"
             loading="lazy"
+            onLoad={(e) => {
+              if (e.currentTarget.naturalWidth === 120 && e.currentTarget.naturalHeight === 90) {
+                e.currentTarget.src =
+                  'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop';
+              }
+            }}
             onError={(e) => {
               e.currentTarget.src =
-                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200';
+                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&auto=format&fit=crop';
             }}
           />
           {isCurrent && (

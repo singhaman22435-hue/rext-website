@@ -1,62 +1,67 @@
 import { EqualizerBand, EqualizerPreset } from '../types';
 
 export const DEFAULT_EQ_BANDS: EqualizerBand[] = [
-  { freq: 60, label: '60 Hz (Sub)', gain: 0 },
-  { freq: 230, label: '230 Hz (Bass)', gain: 0 },
-  { freq: 910, label: '910 Hz (Mids)', gain: 0 },
-  { freq: 4000, label: '4 kHz (Presence)', gain: 0 },
-  { freq: 14000, label: '14 kHz (Treble)', gain: 0 },
+  { freq: 31, label: '31 Hz', gain: 0 },
+  { freq: 62, label: '62 Hz', gain: 0 },
+  { freq: 125, label: '125 Hz', gain: 0 },
+  { freq: 250, label: '250 Hz', gain: 0 },
+  { freq: 500, label: '500 Hz', gain: 0 },
+  { freq: 1000, label: '1 kHz', gain: 0 },
+  { freq: 2000, label: '2 kHz', gain: 0 },
+  { freq: 4000, label: '4 kHz', gain: 0 },
+  { freq: 8000, label: '8 kHz', gain: 0 },
+  { freq: 16000, label: '16 kHz', gain: 0 },
 ];
 
 export const EQ_PRESETS: EqualizerPreset[] = [
   {
     id: 'studio-hd',
     name: 'Studio Master HD',
-    description: 'Lossless 24-bit balanced studio master with crystal air & punch',
+    description: 'Lossless balanced studio master with crystal air & punch',
     bassBoost: 6,
-    gains: [4, 2, 0, 3, 5],
+    gains: [2, 4, 3, 1, 0, 1, 2, 3, 4, 5],
   },
   {
     id: 'bass-heavy',
     name: 'Heavy 808 Bass',
     description: 'Deep sub-woofer punch with zero distortion brickwall limiter',
     bassBoost: 14,
-    gains: [9, 6, -1, 2, 4],
+    gains: [8, 9, 7, 5, 1, -1, 0, 2, 3, 4],
   },
   {
     id: 'club-punch',
     name: 'Punchy Club',
     description: 'Tight kicks and crystal-clear vocals',
     bassBoost: 8,
-    gains: [6, 4, -1, 3, 5],
+    gains: [5, 6, 5, 3, 0, -1, 1, 3, 4, 5],
   },
   {
     id: 'vocal-clarity',
     name: 'Vocal Presence',
     description: 'Crisp upfront vocals and intimate lyrics clarity',
     bassBoost: 2,
-    gains: [-2, 0, 5, 4, 3],
+    gains: [-3, -2, -1, 1, 3, 5, 4, 3, 2, 1],
   },
   {
     id: 'electronic',
     name: 'Electronic & Phonk',
     description: 'Aggressive V-curve with deep sub-bass and high air',
     bassBoost: 10,
-    gains: [8, 4, -2, 5, 7],
+    gains: [7, 8, 6, 3, 0, -2, 2, 5, 6, 7],
   },
   {
     id: 'audiophile',
     name: 'Audiophile Pure',
     description: 'Linear response with maximum dynamic range',
     bassBoost: 2,
-    gains: [1, 1, 0, 2, 2],
+    gains: [1, 1, 1, 0, 0, 0, 1, 2, 2, 2],
   },
   {
     id: 'flat',
     name: 'Flat (Bypass)',
     description: 'Raw neutral audio bypass',
     bassBoost: 0,
-    gains: [0, 0, 0, 0, 0],
+    gains: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   }
 ];
 
@@ -163,16 +168,16 @@ class AudioEngine {
       this.bassFilter.frequency.value = 65;
       this.bassFilter.gain.value = 6;
 
-      // 3. 5-Band Graphic Equalizer
-      this.eqFilters = DEFAULT_EQ_BANDS.map((band) => {
+      // 3. 10-Band Graphic Equalizer
+      this.eqFilters = DEFAULT_EQ_BANDS.map((band, idx) => {
         const filter = this.audioCtx!.createBiquadFilter();
-        if (band.freq <= 80) {
+        if (idx === 0) {
           filter.type = 'lowshelf';
-        } else if (band.freq >= 12000) {
+        } else if (idx === DEFAULT_EQ_BANDS.length - 1) {
           filter.type = 'highshelf';
         } else {
           filter.type = 'peaking';
-          filter.Q.value = 1.4;
+          filter.Q.value = 1.414;
         }
         filter.frequency.value = band.freq;
         filter.gain.value = band.gain;
@@ -306,10 +311,39 @@ class AudioEngine {
 
   public setVolume(volume: number) {
     const clamped = Math.max(0, Math.min(1, volume));
-    this.audioElement.volume = clamped;
     if (this.masterGain && this.audioCtx) {
+      // Avoid dual-attenuation: masterGain controls the output level in WebAudio
+      this.audioElement.volume = 1.0;
       this.masterGain.gain.setValueAtTime(clamped, this.audioCtx.currentTime);
+    } else {
+      this.audioElement.volume = clamped;
     }
+  }
+
+  public getSource(): string {
+    return this.audioElement.src || '';
+  }
+
+  public hasSource(): boolean {
+    return Boolean(this.audioElement.src);
+  }
+
+  public setPlaybackRate(rate: number): void {
+    if (isFinite(rate) && rate > 0) {
+      this.audioElement.playbackRate = Math.max(0.25, Math.min(2.0, rate));
+    }
+  }
+
+  public getPlaybackRate(): number {
+    return this.audioElement.playbackRate || 1.0;
+  }
+
+  public setCurrentTime(time: number): void {
+    this.seek(time);
+  }
+
+  public setEqGain(bandIndex: number, gainDb: number): void {
+    this.setEqBandGain(bandIndex, gainDb);
   }
 
   public setBassBoost(gainDb: number) {

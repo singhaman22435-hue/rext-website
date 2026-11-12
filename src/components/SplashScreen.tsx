@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 
 interface SplashScreenProps {
-  onLoaded: () => void;
+  onLoaded?: () => void;
+  onFinish?: () => void;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoaded }) => {
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoaded, onFinish }) => {
   const [progress, setProgress] = useState(15);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
+    const finish = onFinish || onLoaded;
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev < 90) {
@@ -18,7 +20,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoaded }) => {
           setProgress(100);
           setTimeout(() => {
             setIsFadingOut(true);
-            setTimeout(onLoaded, 400);
+            if (finish) setTimeout(finish, 400);
           }, 200);
           return 100;
         }
@@ -26,7 +28,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onLoaded }) => {
     }, 180);
 
     return () => clearInterval(timer);
-  }, [onLoaded]);
+  }, [onLoaded, onFinish]);
 
   return (
     <div

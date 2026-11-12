@@ -131,7 +131,7 @@ function youtubeSearchPlugin(): Plugin {
                       audioUrl: `https://www.youtube.com/watch?v=${videoId}`,
                       duration: durationSec,
                       genre: 'Trending',
-                      bitrate: '320 kbps Master',
+                      bitrate: 'YouTube HQ Stream',
                       year: new Date().getFullYear(),
                       bassLevel: 85,
                       plays: Math.floor(Math.random() * 4000000) + 1000000,

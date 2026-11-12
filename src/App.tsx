@@ -26,6 +26,7 @@ import { DownloadService } from './services/downloadService';
 import { youtubeEngine } from './services/youtubeEngine';
 import { MediaSessionService } from './services/mediaSessionService';
 import { LyricsService } from './services/lyricsService';
+import { playerStore } from './stores/playerStore';
 import { shareTrack } from './utils/shareUtils';
 
 // Components
@@ -77,7 +78,8 @@ import {
   ListMusic,
   TrendingUp,
   ArrowLeft,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -124,6 +126,16 @@ export const App: React.FC = () => {
   // Queue ("Up Next")
   const [playQueue, setPlayQueue] = useState<Track[]>([]);
   const [isQueueOpen, setIsQueueOpen] = useState(false);
+  const activeBlobUrlRef = useRef<string | null>(null);
+
+  const revokeActiveBlobUrl = useCallback(() => {
+    if (activeBlobUrlRef.current) {
+      try {
+        URL.revokeObjectURL(activeBlobUrlRef.current);
+      } catch {}
+      activeBlobUrlRef.current = null;
+    }
+  }, []);
 
   // Custom User Playlists
   const [userPlaylists, setUserPlaylists] = useState<Playlist[]>(() =>
@@ -444,9 +456,11 @@ export const App: React.FC = () => {
         }
       } else {
         youtubeEngine.stop();
+        revokeActiveBlobUrl();
         const offlineBlob = await StorageService.getOfflineAudioBlob(track.id);
         if (offlineBlob) {
           const blobUrl = URL.createObjectURL(offlineBlob);
+          activeBlobUrlRef.current = blobUrl;
           await audioEngine.loadAndPlay(blobUrl);
         } else {
           await audioEngine.loadAndPlay(track.audioUrl);
@@ -457,9 +471,7 @@ export const App: React.FC = () => {
         audioEngine.setBassBoost(bassBoost);
         audioEngine.setTrebleBoost(trebleBoost);
         audioEngine.setVolume(isMuted ? 0 : volume);
-        if (audioEngine.audioElement) {
-          audioEngine.audioElement.playbackRate = playbackSpeed;
-        }
+        audioEngine.setPlaybackRate(playbackSpeed);
       }
 
       // Prefetch synced lyrics in background for instant lyrics/fullscreen
@@ -499,7 +511,7 @@ export const App: React.FC = () => {
           youtubeEngine.play();
         }
       } else {
-        if (!audioEngine.audioElement?.src) {
+        if (!audioEngine.hasSource()) {
           audioEngine.loadAndPlay(currentTrack.audioUrl);
           if (currentTime > 0) audioEngine.seek(currentTime);
         } else {
@@ -648,6 +660,7 @@ export const App: React.FC = () => {
   // Connect Audio & YouTube Engine Callbacks
   useEffect(() => {
     audioEngine.onTimeUpdate = (curr, dur) => {
+      playerStore.setTime(curr, dur);
       if (!currentTrack?.youtubeId && currentTrack?.source !== 'youtube') {
         setCurrentTime(curr);
         if (dur > 0) setDuration(dur);
@@ -666,7 +679,14 @@ export const App: React.FC = () => {
       }
     };
 
+    audioEngine.onError = (err) => {
+      console.warn('Audio playback error:', err);
+      showToast('Audio playback error. Skipping to next song...');
+      setTimeout(handleNextTrack, 1200);
+    };
+
     youtubeEngine.onTimeUpdate = (curr, dur) => {
+      playerStore.setTime(curr, dur);
       if (currentTrack?.youtubeId || currentTrack?.source === 'youtube') {
         setCurrentTime(curr);
         if (dur > 0) setDuration(dur);
@@ -684,7 +704,17 @@ export const App: React.FC = () => {
         handleNextTrack();
       }
     };
-  }, [currentTrack, handleNextTrack]);
+
+    youtubeEngine.onError = (err) => {
+      console.warn('YouTube playback error:', err);
+      showToast('Track unavailable or restricted. Auto-skipping...');
+      setTimeout(handleNextTrack, 1200);
+    };
+
+    return () => {
+      revokeActiveBlobUrl();
+    };
+  }, [currentTrack, handleNextTrack, revokeActiveBlobUrl, showToast]);
 
   // MediaSession API Integration (Lockscreen, Notification, Bluetooth Headphone buttons)
   useEffect(() => {
@@ -730,14 +760,8 @@ export const App: React.FC = () => {
   // Playback Speed Setter
   const handleSetPlaybackSpeed = (speed: number) => {
     setPlaybackSpeed(speed);
-    if (audioEngine.audioElement) {
-      audioEngine.audioElement.playbackRate = speed;
-    }
-    if (youtubeEngine.player && youtubeEngine.player.setPlaybackRate) {
-      try {
-        youtubeEngine.player.setPlaybackRate(speed);
-      } catch {}
-    }
+    audioEngine.setPlaybackRate(speed);
+    youtubeEngine.setPlaybackRate(speed);
     showToast(`Playback speed: ${speed}x`);
   };
 
@@ -879,6 +903,8 @@ export const App: React.FC = () => {
         track,
         blobSize,
         downloadedAt: Date.now(),
+        progress: 100,
+        status: 'completed',
       };
       await StorageService.saveDownloadItem(newItem);
 
@@ -1286,7 +1312,7 @@ export const App: React.FC = () => {
                         const target = tracks.find((t) => pl.trackIds.includes(t.id));
                         if (target) handlePlayTrack(target);
                       }}
-                      isCurrent={selectedPlaylist?.id === pl.id}
+                      isCurrent={false}
                     />
                   ))}
                 </div>

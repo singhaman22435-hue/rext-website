@@ -169,7 +169,7 @@ export const ImportAudioModal: React.FC<ImportAudioModalProps> = ({
                 <span>Stream Link or Audio URL</span>
                 {detectedYtId && (
                   <span className="text-[10px] text-[var(--accent-orange)] font-bold flex items-center gap-1">
-                    <Music2 className="w-3.5 h-3.5" /> HD Audio Stream Detected
+                    <Music className="w-3.5 h-3.5" /> HD Audio Stream Detected
                   </span>
                 )}
               </label>

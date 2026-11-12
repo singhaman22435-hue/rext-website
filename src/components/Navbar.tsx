@@ -120,21 +120,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   const activeFontObj = FONTS.find((f) => f.id === currentFont) || FONTS[0];
 
   return (
-    <header className="sticky top-0 z-30 bg-[var(--bg-card)]/80 backdrop-blur-2xl border-b border-[var(--border-color)] px-3 sm:px-6 py-2.5 sm:py-3 space-y-2.5 transition-colors duration-300">
+    <header className="sticky top-0 z-40 bg-[var(--bg-card)]/95 backdrop-blur-2xl border-b border-[var(--border-color)] px-3 sm:px-6 py-2.5 sm:py-3 space-y-2.5 transition-colors duration-300">
       {/* Top Mobile Brand Bar */}
-      <div className="flex items-center justify-between gap-1.5 md:hidden w-full overflow-hidden select-none">
+      <div className="flex items-center justify-between gap-1.5 md:hidden w-full select-none">
         {/* Brand */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-r from-[var(--accent-orange)] to-[var(--accent-blue)] flex items-center justify-center font-black text-white text-xs shadow-xs shrink-0">
             R
           </div>
           <h1 className="text-sm font-black tracking-tight text-[var(--text-main)] flex items-center gap-1 shrink-0 whitespace-nowrap">
-            rext <span className="text-[10px] text-[var(--accent-orange)] font-mono font-bold">PRO</span>
+            <span>rext</span> <span className="text-[10px] text-[var(--accent-orange)] font-mono font-bold">PRO</span>
           </h1>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 overflow-x-auto no-scrollbar py-0.5">
           {onOpenVibes && (
             <button
               onClick={onOpenVibes}
@@ -143,7 +143,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               aria-label="REXT Vibes"
             >
               <Flame className="w-3.5 h-3.5 fill-current shrink-0" />
-              <span>Vibes</span>
+              <span className="hidden min-[390px]:inline whitespace-nowrap">Vibes</span>
             </button>
           )}
 
@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Sub-Bass Equalizer"
           >
             <Sliders className="w-3.5 h-3.5 text-[var(--accent-orange)] shrink-0" />
-            <span className="font-mono text-[10px] sm:text-[11px] font-bold text-[var(--accent-orange)]">
+            <span className="font-mono text-[10px] sm:text-[11px] font-bold text-[var(--accent-orange)] shrink-0 whitespace-nowrap">
               +{bassBoost}dB
             </span>
           </button>
@@ -171,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Pro Membership"
             >
               <Crown className="w-3.5 h-3.5 fill-current shrink-0" />
-              <span className="hidden min-[380px]:inline">{isPro ? 'Pro' : 'Get Pro'}</span>
+              <span className="hidden min-[420px]:inline whitespace-nowrap">{isPro ? 'Pro' : 'Get Pro'}</span>
             </button>
           )}
 
@@ -227,10 +227,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Search History & Trending Suggestions Floating Card */}
           {isSearchFocused && !searchQuery && (
             <div
-              className="absolute left-0 right-0 top-12 p-3.5 sm:p-4 rounded-2xl border border-[var(--border-color)] shadow-2xl z-50 space-y-3 animate-slide-up"
+              className="absolute left-0 right-0 top-12 p-3.5 sm:p-4 rounded-2xl border border-[var(--border-color)] shadow-2xl z-[100] space-y-3 animate-slide-up isolate"
               style={{
-                backgroundColor: 'var(--bg-card, #ffffff)',
-                boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--border-color)'
+                backgroundColor: currentTheme === 'mocha' ? '#1A1614' : 'var(--bg-surface, #ffffff)',
+                boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-color)',
+                opacity: 1,
               }}
             >
               {/* Recent Searches */}

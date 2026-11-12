@@ -24,8 +24,11 @@ export const MiniVideoPlayer: React.FC<MiniVideoPlayerProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    if (isVisible && anchorRef.current) {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+    if (isVisible && anchorRef.current && !isMobile) {
       youtubeEngine.setAnchor(anchorRef.current, 'mini-video', false);
+    } else {
+      youtubeEngine.clearAnchor('mini-video');
     }
     return () => {
       // Clear anchor when unmounted or hidden

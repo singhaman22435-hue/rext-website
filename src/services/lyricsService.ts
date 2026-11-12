@@ -129,7 +129,7 @@ const BUILTIN_FULL_LYRICS: Record<string, LyricLine[]> = {
   ],
 
   // Tauba Tauba - Karan Aujla
-  'yt-rohn_n_b7K8': [
+  'yt-x1-g7Z0yrIk': [
     { time: 0, text: "Karan Aujla!" },
     { time: 3, text: "Ho husn tera tauba tauba" },
     { time: 6.5, text: "Nakhra tera tauba tauba" },

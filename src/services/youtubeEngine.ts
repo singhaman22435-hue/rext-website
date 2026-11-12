@@ -300,16 +300,35 @@ class YouTubeEngine {
       return;
     }
 
-    const rect = this.anchorElement.getBoundingClientRect();
-    const width = rect.width || this.anchorElement.offsetWidth;
-    const height = rect.height || this.anchorElement.offsetHeight;
-
-    if (width <= 0 || height <= 0) {
-      // Still in 0-size mount frame; will be caught by RAF tracking
+    if (!this.anchorElement.isConnected) {
+      this.clearAnchor(this.activeOwnerId || '');
       return;
     }
 
+    const rect = this.anchorElement.getBoundingClientRect();
+    const width = rect.width || this.anchorElement.offsetWidth;
+    const height = rect.height || this.anchorElement.offsetHeight;
     const computed = window.getComputedStyle(this.anchorElement);
+
+    if (width <= 0 || height <= 0 || computed.display === 'none' || computed.visibility === 'hidden') {
+      // Anchor is invisible or hidden (e.g. mobile display:none on MiniVideoPlayer)
+      // Safely retreat container to background audio-only mode immediately
+      container.style.position = 'fixed';
+      container.style.bottom = '0px';
+      container.style.left = '0px';
+      container.style.top = 'auto';
+      container.style.right = 'auto';
+      container.style.width = '240px';
+      container.style.height = '140px';
+      container.style.opacity = '0.01';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '-1';
+      container.style.overflow = 'hidden';
+      container.style.visibility = 'visible';
+      container.style.transform = 'scale(0.01)';
+      container.style.transformOrigin = 'bottom left';
+      return;
+    }
     container.style.position = 'fixed';
     container.style.top = `${rect.top}px`;
     container.style.left = `${rect.left}px`;
@@ -498,6 +517,51 @@ class YouTubeEngine {
 
   public getCurrentVideoId(): string | null {
     return this.currentVideoId;
+  }
+
+  public hasSource(): boolean {
+    return Boolean(this.currentVideoId);
+  }
+
+  public setPlaybackRate(rate: number): void {
+    if (this.player && typeof this.player.setPlaybackRate === 'function') {
+      try {
+        this.player.setPlaybackRate(rate);
+      } catch {}
+    }
+  }
+
+  public getPlaybackRate(): number {
+    if (this.player && typeof this.player.getPlaybackRate === 'function') {
+      try {
+        return this.player.getPlaybackRate() || 1.0;
+      } catch {
+        return 1.0;
+      }
+    }
+    return 1.0;
+  }
+
+  public getCurrentTime(): number {
+    if (this.player && typeof this.player.getCurrentTime === 'function') {
+      try {
+        return this.player.getCurrentTime() || 0;
+      } catch {
+        return 0;
+      }
+    }
+    return 0;
+  }
+
+  public getDuration(): number {
+    if (this.player && typeof this.player.getDuration === 'function') {
+      try {
+        return this.player.getDuration() || 0;
+      } catch {
+        return 0;
+      }
+    }
+    return 0;
   }
 }
 

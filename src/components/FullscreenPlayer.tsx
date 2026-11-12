@@ -399,7 +399,7 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
               className="mt-2.5 w-full py-2 px-3.5 rounded-2xl bg-[var(--bg-card)]/80 border border-[var(--border-color)] text-center cursor-pointer hover:border-[var(--accent-orange)]/50 transition-colors"
             >
               <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate">
-                {activeLyricText || 'REXT Cinema Studio • 24-bit Audio DSP Active'}
+                {activeLyricText || (track.source === 'youtube' || track.youtubeId ? 'REXT Cinema Studio • Stream Playback' : 'REXT Cinema Studio • Audio Engine Active')}
               </p>
             </div>
           </div>
@@ -688,9 +688,15 @@ export const FullscreenPlayer: React.FC<FullscreenPlayerProps> = ({
         <div className="flex items-center justify-between">
           <div className="hidden sm:flex items-center gap-2 text-xs text-[var(--text-muted)]">
             <span className="px-2 py-0.5 rounded bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--accent-orange)] font-mono font-bold">
-              FLAC 24-bit
+              {track.source === 'youtube' || track.youtubeId
+                ? 'YouTube Stream'
+                : (track.bitrate || 'HQ Audio')}
             </span>
-            <span>48,000 Hz Studio</span>
+            <span>
+              {track.source === 'youtube' || track.youtubeId
+                ? 'High Quality Stream'
+                : 'Stereo Audio'}
+            </span>
           </div>
 
           {/* Center Playback Controls */}

@@ -7,12 +7,12 @@
  */
 
 import {
-  generateCryptographicLicenseKey,
   verifyLicenseKey,
   createSessionSignature,
   verifySessionSignature,
   getDeviceFingerprint
-} from '../utils/security.ts';
+} from '../utils/security';
+import { supabaseService } from './supabaseService';
 
 export interface PricingPlan {
   id: 'monthly' | 'yearly' | 'lifetime';
@@ -168,9 +168,9 @@ class ProService {
   }
 
   /**
-   * Validates a user-entered key with cryptographic signature and rate limiting
+   * Validates a user-entered key with backend entitlement verification and rate limiting
    */
-  public validateAndActivateKey(rawKey: string): { success: boolean; message: string } {
+  public async validateAndActivateKey(rawKey: string): Promise<{ success: boolean; message: string }> {
     const lockout = this.checkLockout();
     if (lockout.locked) {
       return {
@@ -184,15 +184,23 @@ class ProService {
       return { success: false, message: 'Please enter your license key' };
     }
 
-    // Verify cryptographic polynomial HMAC checksum
-    const isValid = verifyLicenseKey(clean);
-
-    if (isValid) {
-      this.activatePro(clean);
-      return {
-        success: true,
-        message: 'Genuine License Verified! Rext Pro Lifetime Activated.'
-      };
+    // 1. If backend verification is configured, verify on server
+    if (supabaseService.isAvailable()) {
+      const serverResult = await supabaseService.verifyProEntitlement(clean);
+      if (serverResult.valid) {
+        this.activatePro(clean);
+        return { success: true, message: serverResult.message };
+      }
+    } else {
+      // 2. Format validation fallback
+      const isValid = verifyLicenseKey(clean);
+      if (isValid) {
+        this.activatePro(clean);
+        return {
+          success: true,
+          message: 'License Key Verified! Rext Pro Lifetime Activated.'
+        };
+      }
     }
 
     // Handle failed attempt & enforce exponential backoff lockout
@@ -210,19 +218,8 @@ class ProService {
 
     return {
       success: false,
-      message: `Invalid cryptographic license key (${4 - attempts} attempts remaining).`
+      message: `Invalid license key format (${4 - attempts} attempts remaining).`
     };
-  }
-
-  /**
-   * Helper for the developer/seller to batch generate 100 genuine license keys to sell
-   */
-  public generateKeysBatch(count: number = 10): string[] {
-    const keys: string[] = [];
-    for (let i = 0; i < count; i++) {
-      keys.push(generateCryptographicLicenseKey());
-    }
-    return keys;
   }
 }
 
